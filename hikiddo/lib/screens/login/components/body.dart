@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hikiddo/components/rounded_button.dart';
 import 'package:hikiddo/screens/Signup/signup_screen.dart';
+import 'package:hikiddo/screens/homepage_test/homepage_screen2.dart';
 import 'package:hikiddo/screens/login/components/background.dart';
 import '../../../components/already_have_an_account_check.dart';
 import '../../../components/rounded_input_field.dart';
@@ -11,7 +12,6 @@ class Body extends StatelessWidget {
   const Body({
     super.key,
   });
-
 
   @override
   Widget build(BuildContext context) {
@@ -27,8 +27,8 @@ class Body extends StatelessWidget {
             ),
           ),
           //SvgPicture.asset(
-            //"assets/icons/",
-            //height: size.height * 0.3,
+          //"assets/icons/",
+          //height: size.height * 0.3,
           //),
           const Text(
             "LOGIN",
@@ -40,7 +40,7 @@ class Body extends StatelessWidget {
           SizedBox(height: size.height * 0.02),
           RoundedInputField(
             hintText: "Your Email",
-            onChanged: (value) {} ,
+            onChanged: (value) {},
           ),
           RoundPasswordField(
             onchanged: (value) {},
@@ -48,22 +48,25 @@ class Body extends StatelessWidget {
           const Text("Forgot your Password?"),
           RoundButton(
             text: "LOGIN",
-            press: () {},
+            press: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) {
+                  return const HomePageScreen2();
+                }),
+              );
+            },
             color: const Color.fromRGBO(246, 163, 93, 0.7),
             textcolor: Colors.white,
-            ),
-            AlreadyHaveAnAccountCheck(
-              press: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context){
-                      return const SignUpScreen();
-                    }
-                  ),
-                );
-              }
-            )
+          ),
+          AlreadyHaveAnAccountCheck(press: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) {
+                return const SignUpScreen();
+              }),
+            );
+          })
         ],
       ),
     );
