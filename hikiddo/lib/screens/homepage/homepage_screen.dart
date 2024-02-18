@@ -7,9 +7,22 @@ class HomePageScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return  const Scaffold(
-      body: Body(),
-      bottomNavigationBar: BottomNavigationBarComp(),
+    return  Scaffold(
+      body: const Body(),
+      appBar: AppBar(
+        backgroundColor: const Color.fromRGBO(123, 189, 40, 1.0),
+        iconTheme: const IconThemeData(
+          color: Colors.white
+        ),
+        title: const Text('HIKIDDO!', style: TextStyle(
+          color: Colors.white
+          )
+        ),
+      ),
+      drawer: const Drawer(
+        backgroundColor:  Colors.white,
+      ),
+      bottomNavigationBar: const BottomNavigationBarComp(),
     );
   }
 }

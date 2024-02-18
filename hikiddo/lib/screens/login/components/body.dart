@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hikiddo/components/rounded_button.dart';
 import 'package:hikiddo/screens/Signup/signup_screen.dart';
-import 'package:hikiddo/screens/homepage_test/homepage_screen2.dart';
+import 'package:hikiddo/screens/homepage/homepage_screen.dart';
 import 'package:hikiddo/screens/login/components/background.dart';
 import '../../../components/already_have_an_account_check.dart';
 import '../../../components/rounded_input_field.dart';
@@ -52,7 +51,7 @@ class Body extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) {
-                  return const HomePageScreen2();
+                  return const HomePageScreen();
                 }),
               );
             },

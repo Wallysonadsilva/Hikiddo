@@ -3,7 +3,6 @@ import 'package:hikiddo/components/rounded_button.dart';
 import 'package:hikiddo/screens/Signup/signup_screen.dart';
 import 'package:hikiddo/screens/login/login_screen.dart';
 import 'package:hikiddo/screens/welcome/components/background.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 class Body extends StatelessWidget {
   const Body({super.key});
