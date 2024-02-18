@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:hikiddo/constants.dart';
 import 'package:hikiddo/screens/welcome/welcome_screen.dart';
 
 void main() {
@@ -16,7 +15,6 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Hikiddo',
       theme: ThemeData(
-        primaryColor: primaryColorYellow,
         scaffoldBackgroundColor: const Color.fromRGBO(208, 249, 250, 1.0),
       ),
       home: const WelcomeScreen(),

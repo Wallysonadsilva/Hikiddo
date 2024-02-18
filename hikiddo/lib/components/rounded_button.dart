@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hikiddo/constants.dart';
 
 class RoundButton extends StatelessWidget {
   final String text;
@@ -9,7 +10,7 @@ class RoundButton extends StatelessWidget {
     Key? key,
     required this.text,
     required this.press,
-    this.color = const Color.fromRGBO(246, 163, 93, 1.0),
+    this.color = orangeColor,
     this.textcolor = Colors.white,
   }) : super(key: key);
 

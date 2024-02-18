@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hikiddo/components/rounded_button.dart';
+import 'package:hikiddo/constants.dart';
 import 'package:hikiddo/screens/Signup/signup_screen.dart';
 import 'package:hikiddo/screens/homepage/homepage_screen.dart';
 import 'package:hikiddo/screens/login/components/background.dart';
@@ -55,7 +56,7 @@ class Body extends StatelessWidget {
                 }),
               );
             },
-            color: const Color.fromRGBO(246, 163, 93, 0.7),
+            color: orangeColor,
             textcolor: Colors.white,
           ),
           AlreadyHaveAnAccountCheck(press: () {

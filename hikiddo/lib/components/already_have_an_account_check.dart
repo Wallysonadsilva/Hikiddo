@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hikiddo/constants.dart';
 
 class AlreadyHaveAnAccountCheck extends StatelessWidget {
   final bool login;
@@ -7,8 +8,8 @@ class AlreadyHaveAnAccountCheck extends StatelessWidget {
   const AlreadyHaveAnAccountCheck({
     super.key,
     this.login = true,
-    required this.press, 
-    this.textcolor =  const Color.fromRGBO(246, 163, 93, 1.0),
+    required this.press,
+    this.textcolor =  orangeColor,
   });
 
   @override

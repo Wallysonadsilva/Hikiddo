@@ -1,9 +1,13 @@
+
 import 'package:flutter/material.dart';
 import 'package:hikiddo/components/already_have_an_account_check.dart';
 import 'package:hikiddo/components/rounded_button.dart';
 import 'package:hikiddo/components/rounded_input_field.dart';
 import 'package:hikiddo/components/rounded_password_field.dart';
+import 'package:hikiddo/constants.dart';
 import 'package:hikiddo/screens/Signup/components/background.dart';
+import 'package:hikiddo/screens/Signup/components/or_divider.dart';
+import 'package:hikiddo/screens/Signup/components/social_icons.dart';
 import 'package:hikiddo/screens/joinfamily/joinfamily_screen.dart';
 import 'package:hikiddo/screens/login/login_screen.dart';
 
@@ -22,14 +26,14 @@ class Body extends StatelessWidget {
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 36,
-              color: Color.fromRGBO(255, 87, 87, 1.0),
+              color: redColor,
             ),
           ),
-          SizedBox(height: size.height * 0.03),
+          SizedBox(height: size.height * 0.01),
           const Text("Create new",
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: 25,
+              fontSize: 22,
             ),
           ),
           const Text("Account",
@@ -38,39 +42,25 @@ class Body extends StatelessWidget {
               fontSize: 25,
             ),
           ),
-          SizedBox(height: size.height * 0.03),
-          AlreadyHaveAnAccountCheck(
-            textcolor: const Color.fromRGBO(255, 87, 87, 1.0),
-            login:false,
-            press: () {
-              Navigator.push(
-                context, MaterialPageRoute(
-                  builder: (context){
-                    return const LoginScreen();
-                  },
-                ),
-              );
-            },
-          ),
           SizedBox(height: size.height * 0.02),
           RoundedInputField(
             hintText: "Name",
-            iconColor: const Color.fromRGBO(255, 87, 87, 1.0),
+            iconColor: redColor,
             onChanged: (value) {},
           ),
           RoundedInputField(
             hintText: "Email",
             icon: Icons.mail,
-            iconColor: const Color.fromRGBO(255, 87, 87, 1.0),
+            iconColor: redColor,
             onChanged: (value) {},
           ),
           RoundPasswordField(
-            iconColor: const Color.fromRGBO(255, 87, 87, 1.0),
+            iconColor: redColor,
             onchanged: (value) {}
           ),
-          SizedBox(height: size.height * 0.02),
+          SizedBox(height: size.height * 0.01),
           RoundButton(
-            color: const Color.fromRGBO(255, 87, 87, 1.0),
+            color: redColor,
             text: "SIGNUP",
             press: () {
               Navigator.push(
@@ -82,7 +72,40 @@ class Body extends StatelessWidget {
                   ),
               );
             },
-          )
+          ),
+          SizedBox(height: size.height * 0.02),
+          AlreadyHaveAnAccountCheck(
+            textcolor: redColor,
+            login:false,
+            press: () {
+              Navigator.push(
+                context, MaterialPageRoute(
+                  builder: (context){
+                    return const LoginScreen();
+                  },
+                ),
+              );
+            },
+          ),
+          const OrDivider(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              SocialIcon(
+                iconSrc: "assets/icons/facebook.svg",
+                press: () {},
+              ),
+              SocialIcon(
+                iconSrc: "assets/icons/google-plus.svg",
+                press: () {},
+              ),
+              SocialIcon(
+                iconSrc: "assets/icons/apple-logo.svg",
+                press: () {},
+              )
+            ],
+          ),
+          SizedBox(height: size.height * 0.09),
         ],
       ),
     );

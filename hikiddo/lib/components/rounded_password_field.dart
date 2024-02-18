@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hikiddo/components/text_field_container.dart';
+import 'package:hikiddo/constants.dart';
 
 class RoundPasswordField extends StatelessWidget {
   final ValueChanged<String> onchanged;
@@ -7,7 +8,7 @@ class RoundPasswordField extends StatelessWidget {
   const RoundPasswordField({
     super.key,
     required this.onchanged, 
-    this.iconColor = const Color.fromRGBO( 246, 163, 93, 1.0),
+    this.iconColor = orangeColor,
   });
 
   @override

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hikiddo/constants.dart';
 
 class DashboardSquare extends StatelessWidget {
   final String cardText;
@@ -17,7 +18,7 @@ class DashboardSquare extends StatelessWidget {
         width: 160.0, // Consider adjusting the width based on your layout needs
         height: 160.0,
         child: Card(
-          color: const Color.fromRGBO(123, 189, 40, 0.9),
+          color: greenColor,
           elevation: 2.0,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
           child: Center(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:hikiddo/constants.dart';
 
 class BottomNavigationBarComp extends StatelessWidget {
 
@@ -11,7 +12,7 @@ class BottomNavigationBarComp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CurvedNavigationBar(
-      backgroundColor: const Color.fromRGBO(208, 249, 250, 1.0),
+      backgroundColor: lightBlueColor,
       color: const Color.fromRGBO(123, 189, 40, 0.9),
       animationDuration: const Duration(milliseconds: 400),
       items: const [

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hikiddo/components/rounded_button.dart';
 import 'package:hikiddo/components/rounded_input_field.dart';
+import 'package:hikiddo/constants.dart';
 import 'package:hikiddo/screens/homepage/homepage_screen.dart';
 import 'package:hikiddo/screens/joinfamily/components/background.dart';
 
@@ -47,7 +48,7 @@ class Body extends StatelessWidget {
                   ),
                 );
             },
-            color: const Color.fromRGBO(132, 189, 40, 1.0),
+            color: greenColor,
           ),
           SizedBox(height: size.height * 0.25,)
         ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hikiddo/components/text_field_container.dart';
+import 'package:hikiddo/constants.dart';
 
 class RoundedInputField extends StatelessWidget {
   final String hintText;
@@ -11,7 +12,7 @@ class RoundedInputField extends StatelessWidget {
     required this.hintText,
     this.icon = Icons.person,
     required this.onChanged,
-    this.iconColor = const Color.fromRGBO(246, 163, 93, 1.0),
+    this.iconColor = orangeColor,
   });
 
   @override

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hikiddo/constants.dart';
 import 'package:hikiddo/screens/homepage/components/body.dart';
 import 'package:hikiddo/components/bottom_navigation.dart';
 
@@ -10,7 +11,7 @@ class HomePageScreen extends StatelessWidget {
     return  Scaffold(
       body: const Body(),
       appBar: AppBar(
-        backgroundColor: const Color.fromRGBO(123, 189, 40, 1.0),
+        backgroundColor: greenColor,
         iconTheme: const IconThemeData(
           color: Colors.white
         ),

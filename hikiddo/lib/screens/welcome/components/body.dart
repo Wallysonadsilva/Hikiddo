@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hikiddo/components/rounded_button.dart';
+import 'package:hikiddo/constants.dart';
 import 'package:hikiddo/screens/Signup/signup_screen.dart';
 import 'package:hikiddo/screens/login/login_screen.dart';
 import 'package:hikiddo/screens/welcome/components/background.dart';
@@ -22,7 +23,7 @@ class Body extends StatelessWidget {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 40,
-                color: Color.fromRGBO(255, 87, 87, 1.0)
+                color: orangeColor
                 ),
             ),
             SizedBox(height: size.height * 0.02),
@@ -41,7 +42,7 @@ class Body extends StatelessWidget {
               text: "LOGIN",
               press: () {
                 Navigator.push(
-                  context, 
+                  context,
                   MaterialPageRoute(
                     builder: (context){
                       return const LoginScreen();
