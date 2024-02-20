@@ -8,11 +8,11 @@ class Body extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     //Size size = MediaQuery.of(context).size;
-    return Background(
+    return const Background(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-        const Padding(
+        Padding(
           padding: EdgeInsets.all(18.0),
           child: Text(
             "Dashboard",
@@ -26,7 +26,7 @@ class Body extends StatelessWidget {
           Wrap(
             spacing: 8.0, // Space between the DashboardSquares
             alignment: WrapAlignment.center, // Center the squares within the Wrap
-            children: const <Widget>[
+            children: <Widget>[
               DashboardSquare(
                 cardText: "Memory board",
                 imagePath: "assets/images/joinFamily_bottom.png",
@@ -40,7 +40,7 @@ class Body extends StatelessWidget {
           Wrap(
             spacing: 8.0, // Space between the DashboardSquares
             alignment: WrapAlignment.center, // Center the squares within the Wrap
-            children: const <Widget>[
+            children: <Widget>[
               DashboardSquare(
                 cardText: "Misson",
                 imagePath: "assets/images/joinFamily_bottom.png",

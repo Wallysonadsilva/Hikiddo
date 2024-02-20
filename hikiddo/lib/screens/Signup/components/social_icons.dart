@@ -28,8 +28,8 @@ class SocialIcon extends StatelessWidget {
           iconSrc,
           height: 12,
           width: 12,
-          color: redColor,
-          colorBlendMode: BlendMode.srcIn,
+          //color: redColor,
+          //colorBlendMode: BlendMode.srcIn,
           ),
       ),
     );
