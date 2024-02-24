@@ -1,21 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:hikiddo/components/side_bar.dart';
 import 'package:hikiddo/constants.dart';
-import 'package:hikiddo/screens/homepage/components/body.dart';
-import 'package:hikiddo/components/bottom_navigation.dart';
 import 'package:hikiddo/screens/welcome/welcome_screen.dart';
 import 'package:hikiddo/services/auth.dart';
 
-class HomePageScreen extends StatelessWidget {
-  HomePageScreen({super.key});
+class TopNavigationBar extends StatelessWidget implements PreferredSizeWidget {
+  TopNavigationBar({super.key});
 
   final AuthService _auth = AuthService();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: const Body(),
-      appBar: AppBar(
+    return  AppBar(
         backgroundColor: greenColor,
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text('HIKIDDO!', style: TextStyle(color: Colors.white)),
@@ -41,9 +36,9 @@ class HomePageScreen extends StatelessWidget {
             },
           )
         ],
-      ),
-      drawer: const SideBar(),
-      bottomNavigationBar: const BottomNavigationBarComp(),
-    );
+      );
   }
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
