@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hikiddo/constants.dart';
+import 'package:hikiddo/screens/profile/profile_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SideBar extends StatelessWidget {
@@ -134,11 +135,13 @@ class SideBar extends StatelessWidget {
                 Icons.account_circle), // Choose an icon that fits the menu item
             title: const Text('Profile'),
             onTap: () {
-              // Update the state of the app
-              // ...
-              // Then close the drawer
               Navigator.pop(context);
-            },
+              // Navigate to the UserProfilePage
+              Navigator.push(
+                context,
+                  MaterialPageRoute(builder: (context) => const UserProfilePage()),
+              ).then((_) {});
+            }
           ),
           ListTile(
             leading: const Icon(

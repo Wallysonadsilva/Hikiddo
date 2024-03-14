@@ -93,7 +93,7 @@ class _BodyState extends State<Body> {
               press: () async {
                 if (_formKey.currentState!.validate()){
                   setState(() => loading = true);
-                  dynamic result = await _auth.registerUser(email, password);
+                  dynamic result = await _auth.registerUser(email, password, name);
                   if(result != null){
                      // Navigate to the home screen
                     Navigator.pushReplacement(

@@ -1,20 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:hikiddo/components/top_navigation.dart';
 import 'package:hikiddo/screens/profile/components/body.dart';
-import 'package:hikiddo/components/bottom_navigation.dart';
 
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+class UserProfilePage extends StatelessWidget {
+  const UserProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: TopNavigationBar(),
-      body: Body(),
-      bottomNavigationBar: const BottomNavigationBarComp(),
-      drawer: const Drawer(
-        backgroundColor: Colors.white,
-      )
+    return const Scaffold(
+      //appBar: TopNavigationBar(),
+      body:  Body(),
     );
   }
 }

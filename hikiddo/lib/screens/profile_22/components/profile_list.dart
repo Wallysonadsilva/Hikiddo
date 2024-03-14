@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hikiddo/models/profile.dart';
-import 'package:hikiddo/screens/profile/components/profile_tile.dart';
+import 'package:hikiddo/screens/profile_22/components/profile_tile.dart';
 import 'package:provider/provider.dart';
 
 class ProfileList extends StatefulWidget {

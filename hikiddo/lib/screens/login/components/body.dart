@@ -5,6 +5,7 @@ import 'package:hikiddo/loading.dart';
 import 'package:hikiddo/screens/Signup/signup_screen.dart';
 import 'package:hikiddo/screens/homepage/homepage_screen.dart';
 import 'package:hikiddo/screens/login/components/background.dart';
+import 'package:hikiddo/screens/mainscreen/main_screen.dart';
 import 'package:hikiddo/services/auth.dart';
 import '../../../components/already_have_an_account_check.dart';
 import '../../../components/rounded_input_field.dart';
@@ -80,7 +81,7 @@ class _BodyState extends State<Body> {
                       context,
                       MaterialPageRoute(
                           builder: (context) =>
-                              HomePageScreen()),
+                              MainScreen()),
                     );
                   } else {
                     setState(() =>
