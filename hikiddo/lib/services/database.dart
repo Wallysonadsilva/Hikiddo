@@ -9,6 +9,7 @@ class DatabaseService {
 
   //collection reference
   final CollectionReference userCollection = FirebaseFirestore.instance.collection('users');
+  final CollectionReference groupCollection = FirebaseFirestore.instance.collection('familyGroup');
 
   Future updateUserData(String name, String email, String phoneNumber, String password) async {
     return await userCollection.doc(uid).set({
@@ -67,4 +68,86 @@ Stream<Profile> get currentUserProfile {
 }
 
 
+// search for family group
+Future<List<String>> searchGroups(String query) async {
+  // Adjust the path ('groups') to match your Firestore structure
+  final querySnapshot = await FirebaseFirestore.instance
+      .collection('familyGroup')
+      .where('name', isGreaterThanOrEqualTo: query)
+      .where('name', isLessThan: '${query}z')
+      .get();
+
+  final groupNames = querySnapshot.docs
+      .map((doc) => doc.data()['name'] as String)
+      .toList();
+
+  return groupNames;
+}
+
+// Create new family group and set current user as host
+  Future<FamilyGroupCreationResult> createGroup(String groupName) async {
+    final currentUid = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUid == null) {
+      return FamilyGroupCreationResult(success: false, message: 'No user signed in');
+    }
+
+    final querySnapshot = await groupCollection
+        .where('name', isEqualTo: groupName)
+        .get();
+
+    if (querySnapshot.docs.isEmpty) {
+      await groupCollection.add({
+        'name': groupName,
+        'hostId': currentUid,
+        'members': [currentUid],
+        'created_at': FieldValue.serverTimestamp(),
+      });
+      return FamilyGroupCreationResult(success: true, message: 'Group created successfully');
+    } else {
+      return FamilyGroupCreationResult(success: false, message: 'A group with this name already exists.');
+    }
+  }
+
+  //join family group
+    Future<void> joinGroup(String groupId) async {
+    final String? userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) throw Exception('No user signed in');
+
+    DocumentReference groupRef = FirebaseFirestore.instance.collection('familyGroup').doc(groupId);
+
+    // Add user to the group's members list
+    await groupRef.update({
+      'members': FieldValue.arrayUnion([userId]),
+    });
+  }
+
+  //retrived familygroup id using the name of the family group
+  // Method to retrieve a group's ID based on its name
+  Future<String?> getFamilyGroupIdFromName(String groupName) async {
+    try {
+          var querySnapshot = await FirebaseFirestore.instance.collection('familyGroup')
+          .where('name', isEqualTo: groupName)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        return querySnapshot.docs.first.id; // Return the first (and should be only) group ID
+      } else {
+        return null; // No group found with this name
+      }
+    } catch (e) {
+      print("Error retrieving group ID: $e");
+      return null;
+    }
+  }
+
+
+}
+
+
+class FamilyGroupCreationResult {
+  final bool success;
+  final String message;
+
+  FamilyGroupCreationResult({required this.success, this.message = ''});
 }
