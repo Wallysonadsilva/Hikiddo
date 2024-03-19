@@ -31,7 +31,7 @@ class HomePageScreenState extends State<HomePageScreen> {
               style: TextStyle(color: Colors.white),
             ),
             onPressed: () async {
-              await _auth.signOut();
+              await _auth.signOut(context);
               Navigator.pushReplacement(
                 // ignore: use_build_context_synchronously
                 context,

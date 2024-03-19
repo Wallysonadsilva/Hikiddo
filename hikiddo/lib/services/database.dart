@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:hikiddo/models/profile.dart';
 import 'package:hikiddo/models/task.dart';
 
@@ -33,7 +34,6 @@ class DatabaseService {
             .map((doc) => Task.fromFirestore(doc.data(), doc.id))
             .toList());
   }
-  
 
   //LIST OF METHODS UPDATETING AND FETCHING DATA FROM FIREABASE
 
@@ -143,7 +143,8 @@ class DatabaseService {
 
   //retrived familygroup id using the name of the family group
   // Method to retrieve a group's ID based on its name
-  Future<String?> getFamilyGroupIdFromName(String groupName) async {
+  Future<String?> getFamilyGroupIdFromName(
+      BuildContext context, String groupName) async {
     try {
       var querySnapshot = await FirebaseFirestore.instance
           .collection('familyGroup')
@@ -158,13 +159,16 @@ class DatabaseService {
         return null; // No group found with this name
       }
     } catch (e) {
-      print("Error retrieving group ID: $e");
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error retrieving group ID: $e")),
+      );
       return null;
     }
   }
 
   //retrived familygroupId from users collection
-  Future<String?> getFamilyGroupId() async {
+  Future<String?> getFamilyGroupId(BuildContext context) async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user == null) return null; // User not logged in
 
@@ -177,13 +181,17 @@ class DatabaseService {
       Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
       return userData['familyGroupId'];
     } catch (e) {
-      print("Error fetching family group ID: $e");
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error fetching family group ID: $e")),
+      );
       return null;
     }
   }
 
   //get hostId for from familyGroup
-  Future<String?> getFamilyGroupHostId(String familyGroupId) async {
+  Future<String?> getFamilyGroupHostId(
+      BuildContext context, String familyGroupId) async {
     try {
       DocumentSnapshot groupDoc =
           await groupCollection.doc(familyGroupId).get();
@@ -194,7 +202,10 @@ class DatabaseService {
         return null; // Group not found
       }
     } catch (e) {
-      print("Error retrieving family group host ID: $e");
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error retrieving family group host ID: $e")),
+      );
       return null;
     }
   }
@@ -224,28 +235,31 @@ class DatabaseService {
 
   //update user points after completing a task
   Future<void> updateUserPoints(String userId, int pointsToAdd) async {
-  return await userCollection.doc(userId).set({
-    'points': FieldValue.increment(pointsToAdd),
-  }, SetOptions(merge: true));
-}
-// set weekly rewards
-Future<void> setWeeklyReward(String familyGroupId, String title, String description) async {
-  await groupCollection.doc(familyGroupId).update({
-    'weeklyRewardTitle': title,
-    'weeklyRewardDescription': description,
-  });
-}
-//reset points from family members
-Future<void> resetFamilyGroupPoints(String familyGroupId) async {
-  // Fetch all users in the family group
-  var snapshot = await userCollection.where('familyGroupId', isEqualTo: familyGroupId).get();
-  for (var doc in snapshot.docs) {
-    // Reset points for each user
-    userCollection.doc(doc.id).update({'points': 0});
+    return await userCollection.doc(userId).set({
+      'points': FieldValue.increment(pointsToAdd),
+    }, SetOptions(merge: true));
   }
-}
 
+// set weekly rewards
+  Future<void> setWeeklyReward(
+      String familyGroupId, String title, String description) async {
+    await groupCollection.doc(familyGroupId).update({
+      'weeklyRewardTitle': title,
+      'weeklyRewardDescription': description,
+    });
+  }
 
+//reset points from family members
+  Future<void> resetFamilyGroupPoints(String familyGroupId) async {
+    // Fetch all users in the family group
+    var snapshot = await userCollection
+        .where('familyGroupId', isEqualTo: familyGroupId)
+        .get();
+    for (var doc in snapshot.docs) {
+      // Reset points for each user
+      userCollection.doc(doc.id).update({'points': 0});
+    }
+  }
 }
 
 class FamilyGroupCreationResult {

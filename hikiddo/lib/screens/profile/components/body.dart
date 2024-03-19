@@ -47,7 +47,8 @@ class BodyState extends State<Body> {
                     children: [
                       _userInfoRow("Name", profile.name.toString(), context),
                       _userInfoRow("Email", profile.email.toString(), context),
-                      _userInfoRow("Phone Number", profile.phoneNumber.toString(), context),
+                      _userInfoRow("Phone Number",
+                          profile.phoneNumber.toString(), context),
                       _userInfoRow("Password", obscuredPassword, context),
                       // Add other fields as needed
                     ],
@@ -129,9 +130,11 @@ class BodyState extends State<Body> {
                     // Optionally, refresh data or provide user feedback
                   }).catchError((error) {
                     // Handle or log the error
-                    print("Error updating data: $error");
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Error updating data: $error")),
+                    );
                   });
-
+                  // ignore: use_build_context_synchronously
                   Navigator.of(context).pop(); // Close the dialog
                 }
               },

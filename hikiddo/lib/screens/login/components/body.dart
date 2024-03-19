@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:hikiddo/components/rounded_button.dart';
 import 'package:hikiddo/constants.dart';
 import 'package:hikiddo/loading.dart';
@@ -100,14 +99,14 @@ class _BodyState extends State<Body> {
                       if (_formKey.currentState!.validate()) {
                         setState(() => loading = true);
                         dynamic result =
-                            await _auth.userSignIn(email, password);
+                            await _auth.userSignIn(context,email, password);
                         if (result != null) {
                           // Navigate to the home screen
                           Navigator.pushReplacement(
                             // ignore: use_build_context_synchronously
                             context,
                             MaterialPageRoute(
-                                builder: (context) => MainScreen()),
+                                builder: (context) => const MainScreen()),
                           );
                         } else {
                           setState(() => error =

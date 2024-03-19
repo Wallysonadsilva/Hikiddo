@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously, duplicate_ignore
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -145,7 +147,7 @@ class BodyState extends State<Body> {
                             } else {
                               // Retrieve the groupId based on the group name
                               String? groupId = await _databaseService
-                                  .getFamilyGroupIdFromName(suggestion);
+                                  .getFamilyGroupIdFromName(context,suggestion);
                               if (groupId != null) {
                                 _databaseService.joinGroup(groupId).then((_) {
                                   ScaffoldMessenger.of(context).showSnackBar(

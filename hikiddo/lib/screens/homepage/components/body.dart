@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:hikiddo/screens/homepage/components/background.dart';
 import 'package:hikiddo/components/dashboard_center_squares.dart';
 import 'package:hikiddo/screens/tasks/task_screen.dart';

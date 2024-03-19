@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:hikiddo/models/user.dart';
-import 'package:hikiddo/screens/homepage/homepage_screen.dart';
 import 'package:hikiddo/screens/mainscreen/main_screen.dart';
 import 'package:hikiddo/screens/welcome/welcome_screen.dart';
 import 'package:provider/provider.dart';

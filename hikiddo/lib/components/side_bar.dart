@@ -1,20 +1,24 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:hikiddo/constants.dart';
 import 'package:hikiddo/screens/profile/profile_screen.dart';
+// ignore: depend_on_referenced_packages
 import 'package:url_launcher/url_launcher.dart';
 
 class SideBar extends StatelessWidget {
   const SideBar({super.key});
 
   // Function to launch URL
-  void launchMailto() async {
+  void launchMailto(BuildContext context) async {
     final Uri emailUri = Uri(
       scheme: 'mailto',
       path: 'support@hikiddo.com',
     );
     if (!await launchUrl(emailUri)) {
-      print('Could not launch $emailUri');
-      // Here you can add fallback logic, such as displaying an error message.
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not launch email app.')),
+      );
     }
   }
 
@@ -131,18 +135,18 @@ class SideBar extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: const Icon(
-                Icons.account_circle), // Choose an icon that fits the menu item
-            title: const Text('Profile'),
-            onTap: () {
-              Navigator.pop(context);
-              // Navigate to the UserProfilePage
-              Navigator.push(
-                context,
-                  MaterialPageRoute(builder: (context) => const UserProfilePage()),
-              ).then((_) {});
-            }
-          ),
+              leading: const Icon(Icons
+                  .account_circle), // Choose an icon that fits the menu item
+              title: const Text('Profile'),
+              onTap: () {
+                Navigator.pop(context);
+                // Navigate to the UserProfilePage
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const UserProfilePage()),
+                ).then((_) {});
+              }),
           ListTile(
             leading: const Icon(
                 Icons.photo), // Choose an icon that fits the menu item
@@ -259,7 +263,7 @@ class SideBar extends StatelessWidget {
                                       height:
                                           10), // Adds space between lines of text
                                   InkWell(
-                                    onTap: launchMailto, // Updated to call the revised method
+                                    onTap:() {launchMailto(context);}, // Updated to call the revised method
                                     child: const Text(
                                       'support@hikiddo.com',
                                       style: TextStyle(

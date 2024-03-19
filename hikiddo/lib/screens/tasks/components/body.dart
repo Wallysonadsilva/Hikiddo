@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -29,7 +31,7 @@ class BodyState extends State<Body> {
   void _checkIfHost() async {
     String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
     String? hostId =
-        await _databaseService.getFamilyGroupHostId(widget.familyGroupId);
+        await _databaseService.getFamilyGroupHostId(context,widget.familyGroupId);
     setState(() {
       _currentUserIsHost = currentUserId == hostId;
     });
@@ -109,51 +111,56 @@ class BodyState extends State<Body> {
     );
   }
 
-  bool shouldResetPoints = false;
-bool shouldClearReward = false;
+  bool resetPoints = false;
+  bool clearReward = false;
 
-void showSetRewardDialog() {
+  void showSetRewardDialog() {
     final TextEditingController rewardTitleController = TextEditingController();
-    final TextEditingController rewardDescriptionController = TextEditingController();
+    final TextEditingController rewardDescriptionController =
+        TextEditingController();
 
     // Reset checkboxes state every time the dialog is opened
-    shouldResetPoints = false;
-    shouldClearReward = false;
+    resetPoints = false;
+    clearReward = false;
 
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return StatefulBuilder( // Use StatefulBuilder to update dialog's state
+        return StatefulBuilder(
+          // Use StatefulBuilder to update dialog's state
           builder: (context, setState) {
             return AlertDialog(
               title: const Text('Set Weekly Reward'),
               content: SingleChildScrollView(
                 child: ListBody(
                   children: <Widget>[
-                    if (!shouldClearReward) ...[ // Hide input fields if clearing reward
+                    if (!clearReward) ...[
+                      // Hide input fields if clearing reward
                       TextField(
                         controller: rewardTitleController,
-                        decoration: const InputDecoration(hintText: "Reward Title"),
+                        decoration:
+                            const InputDecoration(hintText: "Reward Title"),
                       ),
                       TextField(
                         controller: rewardDescriptionController,
-                        decoration: const InputDecoration(hintText: "Reward Description"),
+                        decoration: const InputDecoration(
+                            hintText: "Reward Description"),
                       ),
                     ],
                     CheckboxListTile(
-                      value: shouldResetPoints,
+                      value: resetPoints,
                       onChanged: (bool? value) {
-                        setState(() => shouldResetPoints = value!);
+                        setState(() => resetPoints = value!);
                       },
                       title: const Text("Reset members points"),
                     ),
                     CheckboxListTile(
-                      value: shouldClearReward,
+                      value: clearReward,
                       onChanged: (bool? value) {
                         setState(() {
-                          shouldClearReward = value!;
+                          clearReward = value!;
                           // Optionally clear input fields when choosing to clear the reward
-                          if (shouldClearReward) {
+                          if (clearReward) {
                             rewardTitleController.clear();
                             rewardDescriptionController.clear();
                           }
@@ -175,12 +182,14 @@ void showSetRewardDialog() {
                   child: const Text('Confirm'),
                   onPressed: () async {
                     try {
-                      if (shouldClearReward) {
+                      if (clearReward) {
                         // Logic to clear the reward
-                        await _databaseService.setWeeklyReward(widget.familyGroupId, "", "");
+                        await _databaseService.setWeeklyReward(
+                            widget.familyGroupId, "", "");
                       } else {
                         // Logic to set a new reward, if fields are not empty
-                        if (rewardTitleController.text.isNotEmpty && rewardDescriptionController.text.isNotEmpty) {
+                        if (rewardTitleController.text.isNotEmpty &&
+                            rewardDescriptionController.text.isNotEmpty) {
                           await _databaseService.setWeeklyReward(
                             widget.familyGroupId,
                             rewardTitleController.text,
@@ -188,14 +197,14 @@ void showSetRewardDialog() {
                           );
                         }
                       }
-                      if (shouldResetPoints) {
+                      if (resetPoints) {
                         // Logic to reset points
-                        await _databaseService.resetFamilyGroupPoints(widget.familyGroupId);
+                        await _databaseService
+                            .resetFamilyGroupPoints(widget.familyGroupId);
                       }
-
                       Navigator.of(context).pop(); // Close the dialog
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: const Text(" Rewards Updated")),
+                        const SnackBar(content: Text(" Rewards Updated")),
                       );
                     } catch (error) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -211,7 +220,6 @@ void showSetRewardDialog() {
       },
     );
   }
-
 
   void updatePointsAndDeleteCompletedTasks() async {
     // This will hold the total points earned from the completed tasks
@@ -235,73 +243,77 @@ void showSetRewardDialog() {
       await _databaseService
           .updateUserPoints(userId, totalPointsEarned)
           .catchError((error) {
-        print("Error updating user points: $error");
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Error updating user points: $error")));
       });
     }
 
     // Delete the completed tasks from Firestore
     for (final task in completedTasks) {
       await _databaseService.deleteTask(task.id).catchError((error) {
-        print("Error deleting task ${task.id}: $error");
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Error deleting task ${task.id}: $error")));
       });
     }
 
     // Optional: Show a confirmation message
-    ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Points updated and completed tasks deleted.')));
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Points updated and completed tasks deleted.')));
+    }
 
     // Optional: Refresh the list of tasks to reflect the changes
     setState(() {});
   }
 
   void showScoreboardDialog() {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text('Family Group Scoreboard'),
-        content: Container(
-          // Set a fixed height or make it scrollable if needed
-          height: 300,
-          width: double.maxFinite,
-          child: StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance
-                .collection('users')
-                .where('familyGroupId', isEqualTo: widget.familyGroupId)
-                .snapshots(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator());
-              }
-              if (!snapshot.hasData) {
-                return Center(child: Text('No family members found'));
-              }
-              List<DocumentSnapshot> userDocs = snapshot.data!.docs;
-              return ListView(
-                children: userDocs.map((doc) {
-                  Map<String, dynamic> userData = doc.data()! as Map<String, dynamic>;
-                  return ListTile(
-                    title: Text(userData['name'] ?? 'No Name'),
-                    trailing: Text('${userData['points'] ?? 0} points'),
-                  );
-                }).toList(),
-              );
-            },
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Family Group Scoreboard'),
+          content: SizedBox(
+            // Set a fixed height or make it scrollable if needed
+            height: 300,
+            width: double.maxFinite,
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('users')
+                  .where('familyGroupId', isEqualTo: widget.familyGroupId)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (!snapshot.hasData) {
+                  return const Center(child: Text('No family members found'));
+                }
+                List<DocumentSnapshot> userDocs = snapshot.data!.docs;
+                return ListView(
+                  children: userDocs.map((doc) {
+                    Map<String, dynamic> userData =
+                        doc.data()! as Map<String, dynamic>;
+                    return ListTile(
+                      title: Text(userData['name'] ?? 'No Name'),
+                      trailing: Text('${userData['points'] ?? 0} points'),
+                    );
+                  }).toList(),
+                );
+              },
+            ),
           ),
-        ),
-        actions: <Widget>[
-          TextButton(
-            child: const Text('Close'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      );
-    },
-  );
-}
-
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Close'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -437,7 +449,9 @@ void showSetRewardDialog() {
                             .taskStatus(taskId, currentStatus)
                             .catchError((error) {
                           // If an error occurs, log it and optionally revert the UI change
-                          print("Failed to toggle task status: $error");
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text(
+                                  "Failed to toggle task status: $error")));
                           setState(() {
                             tasks[index].status = !value;
                           });
