@@ -47,6 +47,17 @@ class AuthService{
     }
   }
 
+  //fogot password
+  Future<void> sendPasswordResetEmail(String email, Function(String) onMessage) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+      onMessage("Password reset email sent.");
+    } catch (e) {
+      print(e.toString()); // Keep the print or remove it, depending on your preference
+      onMessage("Failed to send password reset email. Please try again.");
+    }
+  }
+
   //sign out
   Future<void> signOut() async {
     try{

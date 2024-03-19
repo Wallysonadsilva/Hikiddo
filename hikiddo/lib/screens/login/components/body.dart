@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:hikiddo/components/rounded_button.dart';
 import 'package:hikiddo/constants.dart';
 import 'package:hikiddo/loading.dart';
-import 'package:hikiddo/screens/Signup/signup_screen.dart';
+import 'package:hikiddo/screens/signup/signup_screen.dart';
+import 'package:hikiddo/screens/forgot_password/forgot_pw_page.dart';
 import 'package:hikiddo/screens/login/components/background.dart';
 import 'package:hikiddo/screens/mainscreen/main_screen.dart';
 import 'package:hikiddo/services/auth.dart';
@@ -70,7 +72,28 @@ class _BodyState extends State<Body> {
                       setState(() => password = value);
                     },
                   ),
-                  const Text("Forgot your Password?"),
+
+                  GestureDetector(
+                    onTap: (){
+                      // navigate to new page
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ForgotPasswordPage()),
+                      );
+                    },
+                    child: const Text(
+                      "Forgot your Password?",
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontWeight: FontWeight.bold,
+                        decoration: TextDecoration.underline,
+                        decorationColor: Colors.blue
+                      ),
+                    )
+                  ),
+
+
                   RoundButton(
                     text: "LOGIN",
                     press: () async {

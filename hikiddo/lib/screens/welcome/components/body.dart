@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hikiddo/components/rounded_button.dart';
 import 'package:hikiddo/constants.dart';
-import 'package:hikiddo/screens/Signup/signup_screen.dart';
+import 'package:hikiddo/screens/signup/signup_screen.dart';
 import 'package:hikiddo/screens/login/login_screen.dart';
 import 'package:hikiddo/screens/welcome/components/background.dart';
 

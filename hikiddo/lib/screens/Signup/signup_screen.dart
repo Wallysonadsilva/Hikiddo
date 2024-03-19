@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hikiddo/screens/Signup/components/body.dart';
+import 'package:hikiddo/screens/signup/components/body.dart';
 
 class SignUpScreen extends StatelessWidget {
   const SignUpScreen({super.key});
