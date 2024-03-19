@@ -4,6 +4,11 @@
         android:label="hikiddo"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+
+        <!-- GOOGLE API KEY -->
+        <meta-data android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyAdUgw5z1-goOyDmM0SlWgYPrEeevA0Rrk"/>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
