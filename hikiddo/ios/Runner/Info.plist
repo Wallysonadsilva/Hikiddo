@@ -47,5 +47,14 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- IOS track permission-->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We need your location to provide location-based services while the app is in use.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>We need your location to provide location-based services even when the app is not in use.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>We need your location to provide continuous location-based services.</string>
+
+
 </dict>
 </plist>

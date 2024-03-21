@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:hikiddo/models/location.dart';
 import 'package:hikiddo/models/profile.dart';
 import 'package:hikiddo/models/task.dart';
+import 'package:location/location.dart';
 
 class DatabaseService {
   final String? uid;
@@ -258,6 +260,63 @@ class DatabaseService {
     for (var doc in snapshot.docs) {
       // Reset points for each user
       userCollection.doc(doc.id).update({'points': 0});
+    }
+  }
+
+  // update Latitute and longitude on users collection
+  Future<void> updateUserLocation(LocationData locationData) async {
+    final String? userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId != null) {
+      await FirebaseFirestore.instance.collection('users').doc(userId).update({
+        'lat': locationData.latitude,
+        'lng': locationData.longitude,
+        'locationUpdateTimestamp': FieldValue.serverTimestamp(),
+      });
+    }
+  }
+
+    final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  // Stream of user locations for a specific family group
+  Stream<List<UserLocation>> getFamilyGroupUserLocationsStream(String familyGroupId) {
+    return _firestore
+        .collection('users')
+        .where('familyGroupId', isEqualTo: familyGroupId)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => UserLocation.fromFirestore(doc)).toList());
+  }
+  
+// Fetch user locations based on family group member IDs
+  Future<List<UserLocation>> fetchFamilyGroupUserLocations(
+      String familyGroupId) async {
+    try {
+      // Use the default return type without forcing a cast here.
+      DocumentSnapshot<Object?> familyGroupDoc =
+          await groupCollection.doc(familyGroupId).get();
+      if (familyGroupDoc.exists) {
+        // Perform a safe cast to Map<String, dynamic> when accessing the data.
+        List<dynamic> memberIds =
+            (familyGroupDoc.data() as Map<String, dynamic>)['members'] ?? [];
+        List<UserLocation> memberProfiles = [];
+        for (var memberId in memberIds) {
+          if (memberId is String) {
+            DocumentSnapshot<Object?> userDoc =
+                await userCollection.doc(memberId).get();
+            if (userDoc.exists) {
+              // Perform a safe cast to Map<String, dynamic> when passing to fromFirestore.
+              UserLocation userProfile = UserLocation.fromFirestore(
+                  userDoc as DocumentSnapshot<Map<String, dynamic>>);
+              memberProfiles.add(userProfile);
+            }
+          }
+        }
+        return memberProfiles;
+      } else {
+        return []; // Return an empty list if the family group document does not exist.
+      }
+    } catch (e) {
+      print("Error fetching family group user locations: $e");
+      return [];
     }
   }
 }
