@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:hikiddo/constants.dart';
-import 'package:hikiddo/screens/profile/profile_screen.dart';
 // ignore: depend_on_referenced_packages
 import 'package:url_launcher/url_launcher.dart';
 
@@ -60,13 +59,9 @@ class SideBar extends StatelessWidget {
             ),
           ),
           ListTile(
-            leading: const Icon(
-                Icons.info), // Choose an icon that fits the menu item
+            leading: const Icon(Icons.info),
             title: const Text('About'),
             onTap: () {
-              // Update the state of the app
-              // ...
-              // Then close the drawer
               Navigator.pop(context);
               showModalBottomSheet<void>(
                 context: context,
@@ -135,70 +130,10 @@ class SideBar extends StatelessWidget {
             },
           ),
           ListTile(
-              leading: const Icon(Icons
-                  .account_circle), // Choose an icon that fits the menu item
-              title: const Text('Profile'),
-              onTap: () {
-                Navigator.pop(context);
-                // Navigate to the UserProfilePage
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const UserProfilePage()),
-                ).then((_) {});
-              }),
-          ListTile(
-            leading: const Icon(
-                Icons.photo), // Choose an icon that fits the menu item
-            title: const Text('Memory board'),
-            onTap: () {
-              // Update the state of the app
-              // ...
-              // Then close the drawer
-              Navigator.pop(context);
-            },
-          ),
-          ListTile(
-            leading: const Icon(
-                Icons.task), // Choose an icon that fits the menu item
-            title: const Text('Challenges'),
-            onTap: () {
-              // Update the state of the app
-              // ...
-              // Then close the drawer
-              Navigator.pop(context);
-            },
-          ),
-          ListTile(
-            leading: const Icon(
-                Icons.voice_chat), // Choose an icon that fits the menu item
-            title: const Text('Voice memo'),
-            onTap: () {
-              // Update the state of the app
-              // ...
-              // Then close the drawer
-              Navigator.pop(context);
-            },
-          ),
-          ListTile(
-            leading: const Icon(
-                Icons.group), // Choose an icon that fits the menu item
-            title: const Text('Family'),
-            onTap: () {
-              // Update the state of the app
-              // ...
-              // Then close the drawer
-              Navigator.pop(context);
-            },
-          ),
-          ListTile(
             leading: const Icon(
                 Icons.mail), // Choose an icon that fits the menu item
             title: const Text('Contact'),
             onTap: () {
-              // Update the state of the app
-              // ...
-              // Then close the drawer
               Navigator.pop(context);
               showModalBottomSheet<void>(
                 context: context,
@@ -207,7 +142,7 @@ class SideBar extends StatelessWidget {
                 builder: (BuildContext context) {
                   return FractionallySizedBox(
                     heightFactor:
-                        0.8, // Makes the bottom sheet take up 80% of the screen height
+                        0.75, // Makes the bottom sheet take up 80% of the screen height
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal:
@@ -263,7 +198,9 @@ class SideBar extends StatelessWidget {
                                       height:
                                           10), // Adds space between lines of text
                                   InkWell(
-                                    onTap:() {launchMailto(context);}, // Updated to call the revised method
+                                    onTap: () {
+                                      launchMailto(context);
+                                    }, // Updated to call the revised method
                                     child: const Text(
                                       'support@hikiddo.com',
                                       style: TextStyle(

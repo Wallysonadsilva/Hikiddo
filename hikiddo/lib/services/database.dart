@@ -212,6 +212,15 @@ class DatabaseService {
     }
   }
 
+  Future<void> removeMemberFromFamilyGroup(String familyGroupId, String memberUid) async {
+    DocumentReference groupRef =_firestore.collection('familyGroup').doc(familyGroupId);
+    return await groupRef.update({
+      'members': FieldValue.arrayRemove([memberUid])
+    }).catchError((error) {
+      throw Exception('Failed to remove member: $error');
+    });
+  }
+
   // update the task status
   Future<void> taskStatus(String taskId, bool currentStatus) async {
     return tasksCollection.doc(taskId).update({
@@ -275,17 +284,20 @@ class DatabaseService {
     }
   }
 
-    final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Stream of user locations for a specific family group
-  Stream<List<UserLocation>> getFamilyGroupUserLocationsStream(String familyGroupId) {
+  Stream<List<UserLocation>> getFamilyGroupUserLocationsStream(
+      String familyGroupId) {
     return _firestore
         .collection('users')
         .where('familyGroupId', isEqualTo: familyGroupId)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => UserLocation.fromFirestore(doc)).toList());
+        .map((snapshot) => snapshot.docs
+            .map((doc) => UserLocation.fromFirestore(doc))
+            .toList());
   }
-  
+
 // Fetch user locations based on family group member IDs
   Future<List<UserLocation>> fetchFamilyGroupUserLocations(
       String familyGroupId) async {

@@ -59,25 +59,31 @@ class _BodyState extends State<Body> {
   }
 
 
-  Future<void> _updateMarkers(List<UserLocation> locations) async {
-    Set<Marker> newMarkers = {};
-    for (var userLocation in locations) {
-      final BitmapDescriptor icon = await getMarkerIcon('assets/images/login_center.png', Size(150, 150));// Adjust the path and size as needed
-      final marker = Marker(
-        markerId: MarkerId(userLocation.userId),
-        position: userLocation.latLng,
-        icon: icon, // Use the custom icon
-        infoWindow: InfoWindow(title: userLocation.name),
-        onTap: _fitMarkers
-      );
+ Future<void> _updateMarkers(List<UserLocation> locations) async {
+  Set<Marker> newMarkers = {};
+  for (var userLocation in locations) {
+    // Use a default image URL if none is found
+    String profileImageUrl = userLocation.profileImageUrl;
+    final BitmapDescriptor icon = await getMarkerIconFromUrl(profileImageUrl, const Size(150, 150));
 
-      newMarkers.add(marker);
-    }
+    final marker = Marker(
+      markerId: MarkerId(userLocation.userId),
+      position: userLocation.latLng,
+      icon: icon,
+      infoWindow: InfoWindow(title: userLocation.name),
+      onTap: _fitMarkers,
+    );
 
+    newMarkers.add(marker);
+  }
+
+  if (mounted) {
     setState(() {
       _markers = newMarkers;
     });
   }
+}
+
 
   Future<void> _fitMarkers() async {
     if (_markers.isNotEmpty && _controller.isCompleted && !_initialFitDone) {

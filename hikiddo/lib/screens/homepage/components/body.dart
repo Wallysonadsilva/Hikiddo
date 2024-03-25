@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:hikiddo/screens/familygroup/familygroup.dart';
 import 'package:hikiddo/screens/homepage/components/background.dart';
 import 'package:hikiddo/components/dashboard_center_squares.dart';
 import 'package:hikiddo/screens/tasks/task_screen.dart';
@@ -56,13 +58,25 @@ class Body extends StatelessWidget {
                     );
                   },
                   child: const DashboardSquare(
-                    cardText: "Misson",
+                    cardText: "Challenges",
                     imagePath: "assets/images/challenges.png",
                   ),
                 ),
-                const DashboardSquare(
-                  cardText: "Family Group",
-                  imagePath: "assets/images/joinFamily_bottom.png",
+                GestureDetector(
+                  onTap: (){
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) {
+                          return const FamilyGroupPage();
+                        },
+                      ),
+                    );
+                  },
+                  child: const DashboardSquare(
+                    cardText: "Family Group",
+                    imagePath: "assets/images/joinFamily_bottom.png",
+                  ),
                 ),
               ],
             ),

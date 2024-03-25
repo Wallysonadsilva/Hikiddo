@@ -54,7 +54,13 @@
 	<string>We need your location to provide location-based services even when the app is not in use.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>We need your location to provide continuous location-based services.</string>
-
+	<!-- needs to be added for the image picker to work on IOS, check image_picker: ^1.0.7 for more information -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Photo library usage</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Camaera usage</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Microphone usage</string>
 
 </dict>
 </plist>

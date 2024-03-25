@@ -1,8 +1,14 @@
+import 'dart:typed_data';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:hikiddo/constants.dart';
 import 'package:hikiddo/models/profile.dart';
 import 'package:hikiddo/screens/profile/components/background.dart';
 import 'package:hikiddo/services/database.dart';
+import 'package:hikiddo/services/media_storage.dart';
+import 'package:hikiddo/utils.dart';
+import 'package:image_picker/image_picker.dart';
 
 class Body extends StatefulWidget {
   const Body({super.key});
@@ -12,8 +18,70 @@ class Body extends StatefulWidget {
 }
 
 class BodyState extends State<Body> {
-  // Future or Stream to fetch profiles will be defined here
-  String obscuredPassword = '••••••';
+  Uint8List? _image;
+  bool _isUploading = false;
+  String? _imageURL;
+
+  @override
+  void initState() {
+    super.initState();
+    loadUserProfilePic();
+  }
+
+  void loadUserProfilePic() async {
+    final String? userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId != null) {
+      final DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+      final data = userDoc.data();
+      if (userDoc.exists &&
+          data is Map<String, dynamic> &&
+          data.containsKey('imageLink')) {
+        setState(() {
+          _imageURL = data['imageLink'];
+        });
+      }
+    }
+  }
+
+  void selectImage() async {
+    Uint8List img = await pickUpImage(ImageSource.gallery);
+    if (img.isEmpty) {
+      // User canceled the pick action or failed to select an image
+      print("No image selected or failed to pick an image.");
+      return;
+    }
+    setState(() {
+      _image = img;
+      _isUploading = true; // Begin the upload process
+    });
+    saveProfilePic();
+  }
+
+  void saveProfilePic() async {
+    if (_image == null) {
+      return; // Do nothing if there's no image
+    }
+    try {
+      String resp = await MediaDataServices().savaData(file: _image!);
+      if (resp == "success") {
+        print("Profile picture updated successfully");
+        loadUserProfilePic();
+      } else {
+        print("Failed to update profile picture: $resp");
+        // Handle failure, inform the user
+      }
+    } catch (e) {
+      print("Error during image upload: $e");
+      // Handle error, inform the user
+    } finally {
+      setState(() {
+        _isUploading = false; // Reset upload state
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,10 +91,43 @@ class BodyState extends State<Body> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: <Widget>[
-            const CircleAvatar(
-              radius: 50.0,
-              backgroundImage: NetworkImage('https://via.placeholder.com/150'),
-              backgroundColor: Colors.transparent,
+            Stack(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(4), // Size of the border
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors
+                        .transparent, // Ensure the Container background is transparent
+                    border: Border.all(
+                      color: greenColor
+                          .withOpacity(0.5), // Blue border with 50% opacity
+                      width: 4, // Border thickness
+                    ),
+                  ),
+                  child: _imageURL != null
+                      ? CircleAvatar(
+                          radius: 64,
+                          backgroundImage: NetworkImage(_imageURL!),
+                        )
+                      : const CircleAvatar(
+                          radius: 64.0,
+                          backgroundImage: NetworkImage(
+                              'https://t3.ftcdn.net/jpg/02/09/37/00/360_F_209370065_JLXhrc5inEmGl52SyvSPeVB23hB6IjrR.jpg'),
+                          backgroundColor: Colors.transparent,
+                        ),
+                ),
+                Positioned(
+                  bottom: -10,
+                  left: 80,
+                  child: IconButton(
+                      onPressed: selectImage,
+                      icon: const Icon(
+                        Icons.add_a_photo,
+                        color: yellowColor,
+                      )),
+                ),
+              ],
             ),
             const SizedBox(height: 20),
             StreamBuilder<Profile>(
@@ -42,15 +143,12 @@ class BodyState extends State<Body> {
                 }
                 Profile profile = snapshot.data!;
                 return SingleChildScrollView(
-                  // Use SingleChildScrollView for a single item or just directly return your widgets
                   child: Column(
                     children: [
                       _userInfoRow("Name", profile.name.toString(), context),
                       _userInfoRow("Email", profile.email.toString(), context),
                       _userInfoRow("Phone Number",
                           profile.phoneNumber.toString(), context),
-                      _userInfoRow("Password", obscuredPassword, context),
-                      // Add other fields as needed
                     ],
                   ),
                 );
@@ -62,32 +160,58 @@ class BodyState extends State<Body> {
     );
   }
 
-  // Ensure '_userInfoRow' accepts 'context' as an argument
   Widget _userInfoRow(String label, String value, BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text('$label: $value', style: const TextStyle(fontSize: 16)),
-          ElevatedButton(
-            onPressed: () => _showEditDialog(
-              context,
-              label,
-              value,
-              (newValue) {
-                // Handle the new value here
-                // _updateUserInfo(label, newValue);
-              },
+      child: Container(
+        padding:
+            const EdgeInsets.all(8.0), // Add some padding inside the container
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            RichText(
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: '$label: ',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      color: greenColor,
+                    ),
+                  ),
+                  TextSpan(
+                    text: value,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            child: const Text('Edit'),
-          ),
-        ],
+            ElevatedButton(
+              onPressed: () => _showEditDialog(
+                context,
+                label,
+                value,
+                (newValue) {
+                  // Handle the new value here
+                  // _updateUserInfo(label, newValue);
+                },
+              ),
+              child: const Icon(Icons.edit, color: orangeColor),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  // '_showEditDialog' method here as previously defined
   Future<void> _showEditDialog(BuildContext context, String label,
       String initialValue, Function(String) onConfirm) async {
     TextEditingController controller =
