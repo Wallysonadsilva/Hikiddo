@@ -143,6 +143,44 @@ class DatabaseService {
     }, SetOptions(merge: true));
   }
 
+    // Method to send a join request
+  Future<void> sendJoinRequest(String groupId, String userId) async {
+    await _firestore.collection('familyGroup').doc(groupId)
+        .collection('joinRequests').doc(userId).set({
+      'userId': userId,
+      'status': 'pending'
+    });
+  }
+
+    // Method for the host to approve a join request
+  Future<void> approveJoinRequest(String groupId, String userId) async {
+    // Move user to the group's member list
+    await _firestore.collection('familyGroup').doc(groupId).update({
+      'members': FieldValue.arrayUnion([userId])
+    });
+    // Update the request status to approved
+    await _firestore.collection('familyGroup').doc(groupId)
+        .collection('joinRequests').doc(userId).update({
+      'status': 'approved'
+    });
+
+       //Add familyGroup ID to users collection
+    DocumentReference userRef = userCollection.doc(userId);
+
+    return await userRef.set({
+      'familyGroupId': groupId,
+    }, SetOptions(merge: true));
+  }
+
+    // Method for the host to deny a join request
+  Future<void> denyJoinRequest(String groupId, String userId) async {
+    // Update the request status to denied
+    await _firestore.collection('familyGroup').doc(groupId)
+        .collection('joinRequests').doc(userId).update({
+      'status': 'denied'
+    });
+  }
+
   //retrived familygroup id using the name of the family group
   // Method to retrieve a group's ID based on its name
   Future<String?> getFamilyGroupIdFromName(

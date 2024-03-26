@@ -2,6 +2,7 @@
 
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hikiddo/components/rounded_button.dart';
 import 'package:hikiddo/components/rounded_input_field.dart';
@@ -131,56 +132,59 @@ class BodyState extends State<Body> {
                         text: suggestion,
                         color: greenColor,
                         press: () async {
-                            if (suggestion.startsWith("Create new:")) {
-                              final groupName = suggestion
-                                  .replaceFirst("Create new: \"", "")
-                                  .replaceAll("\"", "");
-                              _tryCreateGroup(groupName);
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) {
-                                    return const MainScreen();
-                                  },
-                                ),
-                              );
-                            } else {
-                              // Retrieve the groupId based on the group name
-                              String? groupId = await _databaseService
-                                  .getFamilyGroupIdFromName(context,suggestion);
-                              if (groupId != null) {
-                                _databaseService.joinGroup(groupId).then((_) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                        content: Text(
-                                            "You've joined the group successfully")),
-                                  );
-                                  // Navigate to home page
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) {
-                                        return const MainScreen();
-                                      },
-                                    ),
-                                  );
-                                }).catchError((error) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                        content: Text(
-                                            "Failed to join group: $error")),
-                                  );
-                                });
-                              } else {
-                                // ignore: use_build_context_synchronously
+                          if (suggestion.startsWith("Create new:")) {
+                            final groupName = suggestion
+                                .replaceFirst("Create new: \"", "")
+                                .replaceAll("\"", "");
+                            _tryCreateGroup(groupName);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) {
+                                  return const MainScreen();
+                                },
+                              ),
+                            );
+                          } else {
+                            // Retrieve the groupId based on the group name
+                            String? groupId = await _databaseService
+                                .getFamilyGroupIdFromName(context, suggestion);
+                            if (groupId != null) {
+                              // Instead of joining the group, send a join request
+                              await _databaseService
+                                  .sendJoinRequest(groupId,
+                                      FirebaseAuth.instance.currentUser!.uid)
+                                  .then((_) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                      content: Text("Group not found")),
+                                      content: Text(
+                                          "Join request sent successfully")),
                                 );
-                              }
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) {
+                                      return const MainScreen();
+                                    },
+                                  ),
+                                );
+                                // Optionally, navigate back or to another relevant screen
+                              }).catchError((error) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                      content: Text(
+                                          "Failed to send join request: $error")),
+                                );
+                              });
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text("Group not found")),
+                              );
                             }
-                          },
-                        );
+                          }
+                        },
+                      );
                     },
                   ),
                 ],

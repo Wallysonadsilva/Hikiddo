@@ -50,4 +50,38 @@ class MediaDataServices {
     }
     return null;
   }
+
+  Future<String> uploadMemoryBoardImage(
+      Uint8List file, String fileName, String groupId) async {
+    // Include the groupId in the file path to ensure uniqueness per group
+    String filePath = 'memoryBoardImages/$groupId/$fileName';
+    String downloadUrl = await uploadMediaToStorage(filePath, file);
+
+    // Save a reference to the image in Firestore with the associated group ID
+    await FirebaseFirestore.instance.collection('memoryBoardImages').add({
+      'imageUrl': downloadUrl,
+      'groupId': groupId,
+      'timestamp':
+          FieldValue.serverTimestamp(), // Optional: for sorting or filtering
+    });
+
+    return downloadUrl;
+  }
+
+  Future<List<String>> fetchMemoryBoardImages(String groupId) async {
+    List<String> imageUrls = [];
+
+    // Fetch image URLs associated with the specified groupId
+    final QuerySnapshot snapshot = await FirebaseFirestore.instance
+        .collection('memoryBoardImages')
+        .where('groupId', isEqualTo: groupId)
+        .get();
+
+    for (var doc in snapshot.docs) {
+      var data = doc.data() as Map<String, dynamic>;
+      imageUrls.add(data['imageUrl']);
+    }
+
+    return imageUrls;
+  }
 }

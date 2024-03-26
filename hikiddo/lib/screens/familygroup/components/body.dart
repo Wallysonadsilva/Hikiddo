@@ -94,9 +94,92 @@ class BodyState extends State<Body> {
     }
   }
 
+  void showJoinRequestsDialog(String groupId) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('Pending Join Requests'),
+          content: SizedBox(
+            width: double.maxFinite,
+            height: 400, // Adjust the height as needed
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('familyGroup')
+                  .doc(groupId)
+                  .collection('joinRequests')
+                  .where('status', isEqualTo: 'pending')
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) return const CircularProgressIndicator();
+                return ListView.builder(
+                  itemCount: snapshot.data!.docs.length,
+                  itemBuilder: (context, index) {
+                    DocumentSnapshot doc = snapshot.data!.docs[index];
+                    // Use a FutureBuilder to fetch user details
+                    return FutureBuilder<DocumentSnapshot>(
+                      future: FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(doc.id)
+                          .get(),
+                      builder: (context, userSnapshot) {
+                        if (!userSnapshot.hasData) {
+                          return const ListTile(
+                            leading: CircularProgressIndicator(),
+                            title: Text('Loading...'),
+                          );
+                        }
+                        Map<String, dynamic> userData =
+                            userSnapshot.data!.data() as Map<String, dynamic>;
+                        String userName = userData['name'] ??
+                            'Unknown User'; // Assuming 'name' field exists in user documents
+                        return ListTile(
+                          title: Text(
+                              'Request from $userName'), // Display fetched user name
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.check),
+                                onPressed: () async {
+                                  await _databaseService.approveJoinRequest(
+                                      groupId, doc.id);
+                                  Navigator.of(dialogContext)
+                                      .pop(); // Optionally close the dialog
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.close),
+                                onPressed: () async {
+                                  await _databaseService.denyJoinRequest(
+                                      groupId, doc.id);
+                                  Navigator.of(dialogContext)
+                                      .pop(); // Optionally close the dialog
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: TopNavigationBar(showBackButton: true),
       body: familyGroupId == null
@@ -147,6 +230,7 @@ class BodyState extends State<Body> {
                                 textAlign: TextAlign.center,
                               ),
                             ),
+                            // Overlay the badge on top of the button
                             ListTile(
                               title: const Text(
                                 "Members:",
@@ -162,7 +246,7 @@ class BodyState extends State<Body> {
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(20),
                                 ),
-                                height: 250,
+                                height: 300,
                                 width: double.infinity,
                                 child: SingleChildScrollView(
                                   physics:
@@ -178,14 +262,21 @@ class BodyState extends State<Body> {
                                                   .doc(memberId)
                                                   .get(),
                                               builder: (context, snapshot) {
-                                                if (!snapshot.hasData) {
+                                                if (!snapshot.hasData ||
+                                                    snapshot.data?.data() ==
+                                                        null) {
                                                   return const Text(
                                                       "Loading...");
                                                 }
-                                                newMemberID = memberId;
-                                                var userData =
-                                                    snapshot.data!.data()
-                                                        as Map<String, dynamic>;
+                                                // Since we now know snapshot.data is not null, we can safely access it
+                                                var userData = snapshot.data!
+                                                        .data()
+                                                    as Map<String, dynamic>?;
+                                                // Check if userData is null before accessing it
+                                                if (userData == null) {
+                                                  return const Text(
+                                                      "User data not found.");
+                                                }
                                                 return ListTile(
                                                   leading: const Icon(
                                                       Icons.person,
@@ -241,30 +332,101 @@ class BodyState extends State<Body> {
                                 ),
                               )
                             else
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: ElevatedButton(
-                                  onPressed: () {},
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: redColor,
-                                    foregroundColor: Colors.white,
-                                    minimumSize: const Size(100, 55),
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 16),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(left: 14.0, top: 8.0, bottom: 8.0),
+                                      child: ElevatedButton(
+                                        onPressed: () {},
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: redColor,
+                                          foregroundColor: Colors.white,
+                                          // Removed minimumSize to allow the button to fill the Expanded widget
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 16, vertical: 20),
+                                        ),
+                                        child: const Text("Delete Group"),
+                                      ),
+                                    ),
                                   ),
-                                  child: const Text("Delete Group"),
-                                ),
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(top: 8.0, bottom: 8.0, right: 23),
+                                      child: Stack(
+                                        alignment: Alignment
+                                            .centerRight, // Adjust the Stack alignment as needed
+                                        children: [
+                                          ElevatedButton(
+                                            onPressed: () =>
+                                                showJoinRequestsDialog(
+                                                    familyGroupId!),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: greenColor,
+                                              foregroundColor: Colors.white,
+                                              // Removed minimumSize to allow the button to fill the Expanded widget
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 22,
+                                                      vertical: 20),
+                                            ),
+                                            child: const Text(
+                                                "Manage Requests"),
+                                          ),
+                                          Positioned(
+                                            top:-5, // Adjust the badge position as needed
+                                            right: 10,
+                                            child: StreamBuilder<QuerySnapshot>(
+                                              stream: FirebaseFirestore.instance
+                                                  .collection('familyGroup')
+                                                  .doc(familyGroupId)
+                                                  .collection('joinRequests')
+                                                  .where('status',
+                                                      isEqualTo: 'pending')
+                                                  .snapshots(),
+                                              builder: (BuildContext context,
+                                                  AsyncSnapshot<QuerySnapshot>
+                                                      snapshot) {
+                                                if (!snapshot.hasData) {
+                                                  return Container(); // Or some loading indicator
+                                                }
+                                                int pendingRequestsCount =
+                                                    snapshot.data!.docs.length;
+                                                return pendingRequestsCount > 0
+                                                    ? Container(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(6),
+                                                        decoration:
+                                                            const BoxDecoration(
+                                                          color: Colors.red,
+                                                          shape:
+                                                              BoxShape.circle,
+                                                        ),
+                                                        child: Text(
+                                                          '$pendingRequestsCount',
+                                                          style:
+                                                              const TextStyle(
+                                                                  color: Colors
+                                                                      .white,
+                                                                  fontSize: 12),
+                                                        ),
+                                                      )
+                                                    : Container(); // Return an empty container if there are no pending requests
+                                              },
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               )
                           ],
                         );
                       },
                     ),
                   ),
-                  Positioned(
-                      child: Image.asset(
-                    "assets/images/joinFamily_bottom.png",
-                    width: size.width * 0.8,
-                  )),
                 ],
               ),
             ),
