@@ -20,7 +20,7 @@ class _BodyState extends State<Body> {
   Set<Marker> _markers = {};
   final Completer<GoogleMapController> _controller = Completer();
   StreamSubscription<List<UserLocation>>? _locationUpdatesSubscription;
-  bool _initialFitDone = false;
+  final bool _initialFitDone = false;
   late BitmapDescriptor customIcon;
 
  @override
@@ -42,7 +42,10 @@ class _BodyState extends State<Body> {
     if (familyGroupId != null) {
       _listenForLocationUpdates(familyGroupId);
     } else {
-      print("No family group ID found or user not part of a family group.");
+      if(!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("You have not joined a Family Group yet")),
+    );
     }
   }
 
@@ -54,7 +57,12 @@ class _BodyState extends State<Body> {
       (locations) async {
         await _updateMarkers(locations);
       },
-      onError: (error) => print("Error listening to location updates: $error"),
+      onError: (error) {
+        if(!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Error listening for location updates")),
+    );
+      },
     );
   }
 

@@ -52,5 +52,8 @@
 
     <!-- Allows the application to access location in the background -->
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <!-- Allows the application to access microphone access in the background -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+
 
 </manifest>

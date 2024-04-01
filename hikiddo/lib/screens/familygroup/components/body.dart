@@ -144,8 +144,7 @@ class BodyState extends State<Body> {
                                 onPressed: () async {
                                   await _databaseService.approveJoinRequest(
                                       groupId, doc.id);
-                                  Navigator.of(dialogContext)
-                                      .pop(); // Optionally close the dialog
+                                  if(context.mounted) Navigator.of(dialogContext).pop();
                                 },
                               ),
                               IconButton(
@@ -153,8 +152,7 @@ class BodyState extends State<Body> {
                                 onPressed: () async {
                                   await _databaseService.denyJoinRequest(
                                       groupId, doc.id);
-                                  Navigator.of(dialogContext)
-                                      .pop(); // Optionally close the dialog
+                                  if(context.mounted) Navigator.of(dialogContext).pop();
                                 },
                               ),
                             ],

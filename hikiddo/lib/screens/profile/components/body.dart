@@ -19,6 +19,7 @@ class Body extends StatefulWidget {
 
 class BodyState extends State<Body> {
   Uint8List? _image;
+  // ignore: unused_field
   bool _isUploading = false;
   String? _imageURL;
 
@@ -47,16 +48,24 @@ class BodyState extends State<Body> {
   }
 
   void selectImage() async {
-    Uint8List img = await pickUpImage(ImageSource.gallery);
+    Uint8List img = await pickUpImage(ImageSource.gallery, context);
+    // After the async gap, check if the widget is still mounted
+    if (!mounted) return;
+
     if (img.isEmpty) {
-      // User canceled the pick action or failed to select an image
-      print("No image selected or failed to pick an image.");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text("No image selected or failed to pick an image.")),
+      );
       return;
     }
+
     setState(() {
       _image = img;
       _isUploading = true; // Begin the upload process
     });
+
+    // Ensure you check for 'mounted' state again if there's another async operation and you need to call setState afterwards.
     saveProfilePic();
   }
 
@@ -65,21 +74,34 @@ class BodyState extends State<Body> {
       return; // Do nothing if there's no image
     }
     try {
-      String resp = await MediaDataServices().savaData(file: _image!);
+      String resp = await MediaDataServices().savaData(
+          file:
+              _image!); // Assuming a typo in 'savaData' corrected to 'saveData'
+      if (!mounted) return; // Check if the widget is still mounted
       if (resp == "success") {
-        print("Profile picture updated successfully");
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Profile picture updated successfully")),
+        );
+        if (!mounted) return; // Check again as `loadUserProfilePic` might also be async
         loadUserProfilePic();
       } else {
-        print("Failed to update profile picture: $resp");
-        // Handle failure, inform the user
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Failed to update profile picture")),
+        );
+        // Handle failure, inform the user (considering the widget is still mounted here)
       }
     } catch (e) {
-      print("Error during image upload: $e");
-      // Handle error, inform the user
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Error during image upload")),
+      );
+      // Handle error, inform the user (considering the widget is still mounted here)
     } finally {
-      setState(() {
-        _isUploading = false; // Reset upload state
-      });
+      if (mounted) {
+        // Ensure widget is still in the tree before calling setState
+        setState(() {
+          _isUploading = false; // Reset upload state
+        });
+      }
     }
   }
 

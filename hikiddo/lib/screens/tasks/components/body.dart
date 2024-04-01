@@ -3,11 +3,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:hikiddo/components/rounded_button.dart';
 import 'package:hikiddo/components/top_navigation.dart';
 import 'package:hikiddo/constants.dart';
 import 'package:hikiddo/models/task.dart';
+import 'package:hikiddo/screens/joinfamily/joinfamily_screen.dart';
 import 'package:hikiddo/screens/tasks/components/background.dart';
 import 'package:hikiddo/services/database.dart';
 
@@ -21,13 +21,23 @@ class Body extends StatefulWidget {
 
 class BodyState extends State<Body> {
   final DatabaseService _databaseService = DatabaseService();
-
   bool _currentUserIsHost = false;
+  String? familyGroupId;
 
   @override
   void initState() {
     super.initState();
     _checkIfHost();
+    _fetchFamilyGroupId();
+  }
+
+  Future<void> _fetchFamilyGroupId() async {
+    String? id = await _databaseService.getFamilyGroupId(context);
+    if (id != null) {
+      setState(() {
+        familyGroupId = id;
+      });
+    }
   }
 
   void _checkIfHost() async {
@@ -325,178 +335,188 @@ class BodyState extends State<Body> {
       appBar: TopNavigationBar(showBackButton: true),
       body: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        child: Background(
-          child: Column(
-            children: [
-              const SizedBox(
-                height: 20.0,
-              ),
-              const Text(
-                "Challenges",
-                style: TextStyle(
-                    color: redColor, fontSize: 28.0, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.start,
-              ),
-              if (userId != null)
-                StreamBuilder<DocumentSnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collection('users')
-                      .doc(userId)
-                      .snapshots(),
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData) return const SizedBox.shrink();
-                    var userDoc = snapshot.data?.data() as Map<String, dynamic>?;
-                    int points = userDoc?['points'] ?? 0;
-                    return Text("Your Points: $points");
-                  },
-                ),
-              const SizedBox(
-                height: 20.0,
-              ),
-              if (_currentUserIsHost)
-                Row(
-                  mainAxisAlignment:
-                      MainAxisAlignment.center, // Adjust spacing as needed
+        child: familyGroupId == null
+            ? const JoinFamilyScreen()
+            : Background(
+                child: Column(
                   children: [
-                    FloatingActionButton(
-                      onPressed: showAddTaskDialog,
-                      backgroundColor: Colors.white,
-                      tooltip: 'Add Task',
-                      heroTag: 'Add Task',
-                      child: const Icon(
-                        Icons.add,
-                        color: yellowColor,
-                      ),
-                    ),
                     const SizedBox(
-                      width: 10.0,
+                      height: 20.0,
                     ),
-                    FloatingActionButton(
-                      onPressed: showSetRewardDialog,
-                      backgroundColor: Colors.white,
-                      tooltip: 'Set Weekly Reward',
-                      heroTag: 'Set Weekly Reward',
-                      child: const Icon(
-                        Icons.card_giftcard,
-                        color: redColor,
+                    const Text(
+                      "Challenges",
+                      style: TextStyle(
+                          color: redColor,
+                          fontSize: 28.0,
+                          fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.start,
+                    ),
+                    if (userId != null)
+                      StreamBuilder<DocumentSnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection('users')
+                            .doc(userId)
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData) return const SizedBox.shrink();
+                          var userDoc =
+                              snapshot.data?.data() as Map<String, dynamic>?;
+                          int points = userDoc?['points'] ?? 0;
+                          return Text("Your Points: $points");
+                        },
                       ),
-                    ),
                     const SizedBox(
-                      width: 10.0,
+                      height: 20.0,
                     ),
-                    FloatingActionButton(
-                      onPressed: showScoreboardDialog,
-                      backgroundColor: Colors.white,
-                      tooltip: 'View Scoreboard',
-                      heroTag: 'View Scoreboard',
-                      child: const Icon(
-                        Icons.scoreboard,
-                        color: orangeColor,
+                    if (_currentUserIsHost)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment
+                            .center, // Adjust spacing as needed
+                        children: [
+                          FloatingActionButton(
+                            onPressed: showAddTaskDialog,
+                            backgroundColor: Colors.white,
+                            tooltip: 'Add Task',
+                            heroTag: 'Add Task',
+                            child: const Icon(
+                              Icons.add,
+                              color: yellowColor,
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 10.0,
+                          ),
+                          FloatingActionButton(
+                            onPressed: showSetRewardDialog,
+                            backgroundColor: Colors.white,
+                            tooltip: 'Set Weekly Reward',
+                            heroTag: 'Set Weekly Reward',
+                            child: const Icon(
+                              Icons.card_giftcard,
+                              color: redColor,
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 10.0,
+                          ),
+                          FloatingActionButton(
+                            onPressed: showScoreboardDialog,
+                            backgroundColor: Colors.white,
+                            tooltip: 'View Scoreboard',
+                            heroTag: 'View Scoreboard',
+                            child: const Icon(
+                              Icons.scoreboard,
+                              color: orangeColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    const SizedBox(
+                      height: 20.0,
+                    ),
+                    StreamBuilder<DocumentSnapshot>(
+                      stream: _databaseService.groupCollection
+                          .doc(widget.familyGroupId)
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData)
+                          return const Text("Loading reward...");
+                        var data =
+                            snapshot.data!.data() as Map<String, dynamic>?;
+                        String weeklyRewardTitle =
+                            data?['weeklyRewardTitle'] ?? 'No Reward Set';
+                        String weeklyRewardDescription =
+                            data?['weeklyRewardDescription'] ?? '';
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("Reward: $weeklyRewardTitle",
+                                style: const TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.bold)),
+                            Text("Description: $weeklyRewardDescription",
+                                style: const TextStyle(fontSize: 16)),
+                          ],
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 20.0),
+                    const Text(
+                      "Tasks",
+                      style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: redColor),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.all(8.0),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      height: 350, // Fixed height for the container
+                      width: double
+                          .infinity, // Container takes the full width of its parent
+                      child: SingleChildScrollView(
+                        // Allows scrolling within the fixed height container
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: StreamBuilder<List<Task>>(
+                          stream: _databaseService.getFamilyGroupTasks(
+                              widget.familyGroupId) as Stream<List<Task>>?,
+                          builder: (context, snapshot) {
+                            if (!snapshot.hasData) {
+                              return const Center(
+                                  child: Text('No tasks found'));
+                            }
+                            List<Task> tasks = snapshot.data!;
+                            return ListView.builder(
+                              shrinkWrap:
+                                  true, // Important to ensure the ListView occupies minimum space
+                              physics:
+                                  const NeverScrollableScrollPhysics(), // Disables scrolling within the ListView
+                              itemCount: tasks.length,
+                              itemBuilder: (context, index) {
+                                return CheckboxListTile(
+                                  activeColor: yellowColor,
+                                  title: Text('- ${tasks[index].title}',
+                                      style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          fontStyle: FontStyle.italic)),
+                                  value: tasks[index].status,
+                                  onChanged: (bool? value) {
+                                    if (value == null) return;
+                                    final taskId = tasks[index].id;
+                                    final currentStatus = tasks[index].status;
+                                    setState(() {
+                                      tasks[index].status = value;
+                                    });
+                                    _databaseService
+                                        .taskStatus(taskId, currentStatus)
+                                        .catchError((error) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(SnackBar(
+                                              content: Text(
+                                                  "Failed to toggle task status: $error")));
+                                      setState(() {
+                                        tasks[index].status = !value;
+                                      });
+                                    });
+                                  },
+                                );
+                              },
+                            );
+                          },
+                        ),
                       ),
                     ),
+                    RoundButton(
+                      text: "Update",
+                      press: updatePointsAndDeleteCompletedTasks,
+                      color: greenColor,
+                    )
                   ],
                 ),
-              const SizedBox(
-                height: 20.0,
               ),
-              StreamBuilder<DocumentSnapshot>(
-                stream: _databaseService.groupCollection
-                    .doc(widget.familyGroupId)
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) return const Text("Loading reward...");
-                  var data = snapshot.data!.data() as Map<String, dynamic>?;
-                  String weeklyRewardTitle =
-                      data?['weeklyRewardTitle'] ?? 'No Reward Set';
-                  String weeklyRewardDescription =
-                      data?['weeklyRewardDescription'] ?? '';
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Reward: $weeklyRewardTitle",
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold)),
-                      Text("Description: $weeklyRewardDescription",
-                          style: const TextStyle(fontSize: 16)),
-                    ],
-                  );
-                },
-              ),
-              const SizedBox(height: 20.0),
-              const Text(
-                "Tasks",
-                style: TextStyle(
-                    fontSize: 22, fontWeight: FontWeight.bold, color: redColor),
-              ),
-              Container(
-                padding: const EdgeInsets.all(8.0),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                height: 350, // Fixed height for the container
-                width: double
-                    .infinity, // Container takes the full width of its parent
-                child: SingleChildScrollView(
-                  // Allows scrolling within the fixed height container
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  child: StreamBuilder<List<Task>>(
-                    stream:
-                        _databaseService.getFamilyGroupTasks(widget.familyGroupId)
-                            as Stream<List<Task>>?,
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData) {
-                        return const Center(child: Text('No tasks found'));
-                      }
-                      List<Task> tasks = snapshot.data!;
-                      return ListView.builder(
-                        shrinkWrap:
-                            true, // Important to ensure the ListView occupies minimum space
-                        physics:
-                            const NeverScrollableScrollPhysics(), // Disables scrolling within the ListView
-                        itemCount: tasks.length,
-                        itemBuilder: (context, index) {
-                          return CheckboxListTile(
-                            activeColor: yellowColor,
-                            title: Text('- ${tasks[index].title}',
-                                style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    fontStyle: FontStyle.italic)),
-                            value: tasks[index].status,
-                            onChanged: (bool? value) {
-                              if (value == null) return;
-                              final taskId = tasks[index].id;
-                              final currentStatus = tasks[index].status;
-                              setState(() {
-                                tasks[index].status = value;
-                              });
-                              _databaseService
-                                  .taskStatus(taskId, currentStatus)
-                                  .catchError((error) {
-                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                    content: Text(
-                                        "Failed to toggle task status: $error")));
-                                setState(() {
-                                  tasks[index].status = !value;
-                                });
-                              });
-                            },
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ),
-              ),
-              RoundButton(
-                text: "Update",
-                press: updatePointsAndDeleteCompletedTasks,
-                color: greenColor,
-              )
-            ],
-          ),
-        ),
       ),
     );
   }

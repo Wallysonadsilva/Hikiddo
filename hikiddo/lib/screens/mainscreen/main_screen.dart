@@ -16,13 +16,13 @@ class MainScreen extends StatefulWidget {
 
 class MainScreenState extends State<MainScreen> {
 
-  int currentIndex = 1;
+  int currentIndex = 0;
   final AuthService _auth = AuthService();
 
   final pages = [
-    const UserProfilePage(),
     const HomePageScreen(),
     const LocationScreen(),
+    const UserProfilePage(),
   ];
 
   @override

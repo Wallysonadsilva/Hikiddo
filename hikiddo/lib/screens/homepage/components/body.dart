@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hikiddo/screens/familygroup/familygroup.dart';
@@ -6,6 +5,7 @@ import 'package:hikiddo/screens/homepage/components/background.dart';
 import 'package:hikiddo/components/dashboard_center_squares.dart';
 import 'package:hikiddo/screens/memoryboard/memory_board.dart';
 import 'package:hikiddo/screens/tasks/task_screen.dart';
+import 'package:hikiddo/screens/voicerecord/voice_recording.dart';
 
 class Body extends StatelessWidget {
   const Body({super.key});
@@ -49,9 +49,21 @@ class Body extends StatelessWidget {
                     imagePath: "assets/images/memoryboard.png",
                   ),
                 ),
-                const DashboardSquare(
-                  cardText: "Voice Rec.",
-                  imagePath: "assets/images/joinFamily_bottom.png",
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) {
+                          return const RecordVoicePage();
+                        },
+                      ),
+                    );
+                  },
+                  child: const DashboardSquare(
+                    cardText: "Voice Rec.",
+                    imagePath: "assets/images/joinFamily_bottom.png",
+                  ),
                 ),
               ],
             ),

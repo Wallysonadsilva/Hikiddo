@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:hikiddo/components/rounded_button.dart';
 import 'package:hikiddo/constants.dart';
 import 'package:hikiddo/loading.dart';
@@ -33,103 +34,109 @@ class _BodyState extends State<Body> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    return loading
-        ? const Loading()
-        : Background(
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Positioned(
-                    child: Image.asset(
-                      "assets/images/login_center.png",
-                      width: size.width * 0.6,
-                    ),
-                  ),
-                  const Text(
-                    "LOGIN",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 30,
-                    ),
-                  ),
-                  SizedBox(height: size.height * 0.02),
-                  RoundedInputField(
-                    validator: (value) =>
-                        value!.isEmpty ? 'Enter an email' : null,
-                    hintText: "Your Email",
-                    onChanged: (value) {
-                      setState(() => email = value);
-                    },
-                  ),
-                  RoundPasswordField(
-                    validator: (value) => value!.length < 6
-                        ? 'Enter a password 6+ characters'
-                        : null,
-                    onchanged: (value) {
-                      setState(() => password = value);
-                    },
-                  ),
-
-                  GestureDetector(
-                    onTap: (){
-                      // navigate to new page
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ForgotPasswordPage()),
-                      );
-                    },
-                    child: const Text(
-                      "Forgot your Password?",
-                      style: TextStyle(
-                        color: Colors.blue,
-                        fontWeight: FontWeight.bold,
-                        decoration: TextDecoration.underline,
-                        decorationColor: Colors.blue
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      body: loading
+          ? const Loading()
+          : Background(
+              child: Form(
+                key: _formKey,
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.only(
+                      bottom: MediaQuery.of(context).viewInsets.bottom),
+                  child: Column(
+                    // Use Stack for overlaying widgets
+                    mainAxisAlignment:
+                        MainAxisAlignment.center, // Center content in the Stack
+                    children: <Widget>[
+                      SizedBox(height: size.height * 0.0),
+                      Image.asset(
+                        "assets/images/login_center.png",
+                        width: size.width * 0.6,
                       ),
-                    )
+                      const Text(
+                        "LOGIN",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 30,
+                        ),
+                      ),
+                      SizedBox(height: size.height * 0.02),
+                      RoundedInputField(
+                        validator: (value) =>
+                            value!.isEmpty ? 'Enter an email' : null,
+                        hintText: "Your Email",
+                        onChanged: (value) {
+                          setState(() => email = value);
+                        },
+                      ),
+                      RoundPasswordField(
+                        validator: (value) => value!.length < 6
+                            ? 'Enter a password 6+ characters'
+                            : null,
+                        onchanged: (value) {
+                          setState(() => password = value);
+                        },
+                      ),
+      
+                      GestureDetector(
+                          onTap: () {
+                            // navigate to new page
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      const ForgotPasswordPage()),
+                            );
+                          },
+                          child: const Text(
+                            "Forgot your Password?",
+                            style: TextStyle(
+                                color: Colors.blue,
+                                fontWeight: FontWeight.bold,
+                                decoration: TextDecoration.underline,
+                                decorationColor: Colors.blue),
+                          )),
+      
+                      RoundButton(
+                        text: "LOGIN",
+                        press: () async {
+                          if (_formKey.currentState!.validate()) {
+                            setState(() => loading = true);
+                            dynamic result =
+                                await _auth.userSignIn(context, email, password);
+                            if (result != null) {
+                              // Navigate to the home screen
+                              Navigator.pushReplacement(
+                                // ignore: use_build_context_synchronously
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const MainScreen()),
+                              );
+                            } else {
+                              setState(() => error =
+                                  'Could not sign in with those credentials');
+                              setState(() => loading = false);
+                            }
+                          }
+                        },
+                        color: orangeColor,
+                        textcolor: Colors.white,
+                      ),
+                      Text(error),
+                      AlreadyHaveAnAccountCheck(press: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) {
+                            return const SignUpScreen();
+                          }),
+                        );
+                      })
+                    ],
                   ),
-
-
-                  RoundButton(
-                    text: "LOGIN",
-                    press: () async {
-                      if (_formKey.currentState!.validate()) {
-                        setState(() => loading = true);
-                        dynamic result =
-                            await _auth.userSignIn(context,email, password);
-                        if (result != null) {
-                          // Navigate to the home screen
-                          Navigator.pushReplacement(
-                            // ignore: use_build_context_synchronously
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const MainScreen()),
-                          );
-                        } else {
-                          setState(() => error =
-                              'Could not sign in with those credentials');
-                          setState(() => loading = false);
-                        }
-                      }
-                    },
-                    color: orangeColor,
-                    textcolor: Colors.white,
-                  ),
-                  Text(error),
-                  AlreadyHaveAnAccountCheck(press: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) {
-                        return const SignUpScreen();
-                      }),
-                    );
-                  })
-                ],
+                ),
               ),
             ),
-          );
+    );
   }
 }

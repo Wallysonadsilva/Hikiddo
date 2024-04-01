@@ -25,9 +25,9 @@ class BottomNavigationBarComp extends StatelessWidget {
       color: const Color.fromRGBO(123, 189, 40, 0.9),
       animationDuration: const Duration(milliseconds: 400),
       items: const <Widget> [
-        Icon(Icons.person, color: Colors.white),
         Icon(Icons.home, color: Colors.white),
         Icon(Icons.location_pin, color:  Colors.white),
+        Icon(Icons.person, color: Colors.white),
       ],
     );
   }

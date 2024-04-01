@@ -206,7 +206,6 @@ Future<BitmapDescriptor> getMarkerIconFromUrl1(String imageUrl, Size size) async
   try {
     // Attempt to download the image from the URL
     final http.Response response = await http.get(Uri.parse(imageUrl));
-    print("Fetching image from URL: $imageUrl");
     if (response.statusCode == 200) {
       final Uint8List imageData = response.bodyBytes;
       // Decode the image and prepare for custom drawing
@@ -235,6 +234,7 @@ Future<BitmapDescriptor> getMarkerIconFromUrl1(String imageUrl, Size size) async
     } else {
       // Log or handle HTTP response error
       print('Failed to download the image, HTTP status code: ${response.statusCode}');
+      
     }
   } catch (e) {
     // Log or handle any errors in fetching or processing the image

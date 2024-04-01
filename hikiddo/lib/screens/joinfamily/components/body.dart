@@ -1,7 +1,5 @@
 // ignore_for_file: use_build_context_synchronously, duplicate_ignore
-
 import 'dart:async';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hikiddo/components/rounded_button.dart';
@@ -22,6 +20,7 @@ class BodyState extends State<Body> {
   final TextEditingController _controller = TextEditingController();
   List<String> _suggestions = [];
   final DatabaseService _databaseService = DatabaseService();
+  Timer? _debounce;
 
   @override
   void initState() {
@@ -29,60 +28,11 @@ class BodyState extends State<Body> {
     _controller.addListener(_onTextChanged);
   }
 
-  Timer? _debounce;
-
-  void _onTextChanged() {
-    if (_debounce?.isActive ?? false) _debounce!.cancel();
-    _debounce = Timer(const Duration(milliseconds: 500), () {
-      final query = _controller.text;
-      if (query.isEmpty) {
-        setState(() => _suggestions = []);
-        return;
-      }
-      _databaseService.searchGroups(query).then((groups) {
-        final suggestions = [...groups];
-        if (!groups.contains(query)) {
-          suggestions.add("Create new: \"$query\"");
-        }
-        setState(() => _suggestions = suggestions);
-      });
-    });
-  }
-
   @override
   void dispose() {
     _debounce?.cancel();
     _controller.dispose();
     super.dispose();
-  }
-
-  void _tryCreateGroup(String groupName) async {
-    final result = await _databaseService.createGroup(groupName);
-    if (result.success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result.message)),
-      );
-      // Optionally, navigate to the new group's page or refresh the group list
-    } else {
-      // Show alert dialog on failure
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Notice'),
-            content: Text(result.message),
-            actions: <Widget>[
-              TextButton(
-                child: const Text('OK'),
-                onPressed: () {
-                  Navigator.of(context).pop(); // Dismiss the alert dialog
-                },
-              ),
-            ],
-          );
-        },
-      );
-    }
   }
 
   @override
@@ -132,10 +82,10 @@ class BodyState extends State<Body> {
                         text: suggestion,
                         color: greenColor,
                         press: () async {
-                          if (suggestion.startsWith("Create new:")) {
+                          if (suggestion.startsWith('Create new:')) {
                             final groupName = suggestion
-                                .replaceFirst("Create new: \"", "")
-                                .replaceAll("\"", "");
+                                .replaceFirst('Create new: \'', '')
+                                .replaceAll('\'', '');
                             _tryCreateGroup(groupName);
                             Navigator.push(
                               context,
@@ -155,31 +105,20 @@ class BodyState extends State<Body> {
                                   .sendJoinRequest(groupId,
                                       FirebaseAuth.instance.currentUser!.uid)
                                   .then((_) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content: Text(
-                                          "Join request sent successfully")),
-                                );
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) {
-                                      return const MainScreen();
-                                    },
-                                  ),
-                                );
+                                _joinRequestDialog(context);
+
                                 // Optionally, navigate back or to another relevant screen
                               }).catchError((error) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                       content: Text(
-                                          "Failed to send join request: $error")),
+                                          'Failed to send join request: $error')),
                                 );
                               });
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                    content: Text("Group not found")),
+                                    content: Text('Group not found')),
                               );
                             }
                           }
@@ -194,6 +133,86 @@ class BodyState extends State<Body> {
           ],
         ),
       ),
+    );
+  }
+
+  void _tryCreateGroup(String groupName) async {
+    final result = await _databaseService.createGroup(groupName);
+    if (result.success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result.message)),
+      );
+      // Optionally, navigate to the new group's page or refresh the group list
+    } else {
+      // Show alert dialog on failure
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Notice'),
+            content: Text(result.message),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop(); // Dismiss the alert dialog
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
+  void _onTextChanged() {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      final query = _controller.text;
+      if (query.isEmpty) {
+        setState(() => _suggestions = []);
+        return;
+      }
+      _databaseService.searchGroups(query).then((groups) {
+        final suggestions = [...groups];
+        if (!groups.contains(query)) {
+          suggestions.add('Create new: \'$query\'');
+        }
+        setState(() => _suggestions = suggestions);
+      });
+    });
+  }
+
+  Future<void> _joinRequestDialog(BuildContext context) {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Join Request'),
+          content: const Text(
+            'Your join request has been sent.',
+          ),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(
+                textStyle: Theme.of(context).textTheme.labelLarge,
+              ),
+              child: const Text('Close'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return const MainScreen();
+                    },
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

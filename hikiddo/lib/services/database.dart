@@ -338,7 +338,7 @@ class DatabaseService {
 
 // Fetch user locations based on family group member IDs
   Future<List<UserLocation>> fetchFamilyGroupUserLocations(
-      String familyGroupId) async {
+      String familyGroupId, BuildContext context) async {
     try {
       // Use the default return type without forcing a cast here.
       DocumentSnapshot<Object?> familyGroupDoc =
@@ -365,7 +365,9 @@ class DatabaseService {
         return []; // Return an empty list if the family group document does not exist.
       }
     } catch (e) {
-      print("Error fetching family group user locations: $e");
+      if(context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar( const SnackBar(content: Text("Error fetching family group user locations")),);
+      }
       return [];
     }
   }

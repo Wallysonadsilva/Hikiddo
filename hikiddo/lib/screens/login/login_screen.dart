@@ -7,10 +7,8 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      //resizeToAvoidBottomInset: false,
-      body: SingleChildScrollView(
-        child: Body(),
-      ),
+      resizeToAvoidBottomInset: false,
+      body: Body(),
     );
   }
 }
