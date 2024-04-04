@@ -329,12 +329,14 @@ class BodyState extends State<Body> {
   @override
   Widget build(BuildContext context) {
     String? userId = FirebaseAuth.instance.currentUser?.uid;
+    Size size = MediaQuery.of(context).size;
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: TopNavigationBar(showBackButton: true),
-      body: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
+      body: SizedBox(
+        height: size.height,
+        width: size.height,
         child: familyGroupId == null
             ? const JoinFamilyScreen()
             : Background(
