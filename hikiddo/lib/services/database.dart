@@ -11,18 +11,14 @@ class DatabaseService {
   DatabaseService({this.uid});
 
   //collection reference
-  final CollectionReference userCollection =
-      FirebaseFirestore.instance.collection('users');
-  final CollectionReference groupCollection =
-      FirebaseFirestore.instance.collection('familyGroup');
-  final CollectionReference tasksCollection =
-      FirebaseFirestore.instance.collection('tasks');
+  final CollectionReference userCollection = FirebaseFirestore.instance.collection('users');
+  final CollectionReference groupCollection = FirebaseFirestore.instance.collection('familyGroup');
+  final CollectionReference tasksCollection = FirebaseFirestore.instance.collection('tasks');
 
   //STREAM
   //Fetch the current users profile data
   Stream<Profile> get currentUserProfile {
-    String? uid = FirebaseAuth
-        .instance.currentUser?.uid; // Ensure you have the user's UID
+    String? uid = FirebaseAuth.instance.currentUser?.uid; // Ensure you have the user's UID
     return userCollection.doc(uid).snapshots().map(_profileFromSnapshot);
   }
 
@@ -32,9 +28,7 @@ class DatabaseService {
         .collection('tasks')
         .where('familyGroupId', isEqualTo: familyGroupId)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => Task.fromFirestore(doc.data(), doc.id))
-            .toList());
+        .map((snapshot) => snapshot.docs.map((doc) => Task.fromFirestore(doc.data(), doc.id)).toList());
   }
 
   //LIST OF METHODS UPDATETING AND FETCHING DATA FROM FIREABASE
@@ -66,8 +60,7 @@ class DatabaseService {
   }
 
   //Update a specific field in the users collection
-  Future<void> safeUpdateUserDataField(
-      String uid, String field, dynamic newValue) async {
+  Future<void> safeUpdateUserDataField(String uid, String field, dynamic newValue) async {
     var docRef = FirebaseFirestore.instance.collection('users').doc(uid);
     return await docRef.set({field: newValue}, SetOptions(merge: true));
   }
@@ -80,8 +73,7 @@ class DatabaseService {
         .where('name', isLessThan: '${query}z')
         .get();
 
-    final groupNames =
-        querySnapshot.docs.map((doc) => doc.data()['name'] as String).toList();
+    final groupNames = querySnapshot.docs.map((doc) => doc.data()['name'] as String).toList();
     return groupNames;
   }
 
@@ -114,8 +106,7 @@ class DatabaseService {
         'familyGroupId': groupId,
       }, SetOptions(merge: true));
 
-      return FamilyGroupCreationResult(
-          success: true, message: 'Group created successfully');
+      return FamilyGroupCreationResult(success: true, message: 'Group created successfully');
     } else {
       return FamilyGroupCreationResult(
           success: false, message: 'A group with this name already exists.');
@@ -127,8 +118,7 @@ class DatabaseService {
     final String? userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) throw Exception('No user signed in');
 
-    DocumentReference groupRef =
-        FirebaseFirestore.instance.collection('familyGroup').doc(groupId);
+    DocumentReference groupRef = FirebaseFirestore.instance.collection('familyGroup').doc(groupId);
 
     //Add user to the group's members list
     await groupRef.update({
@@ -290,8 +280,7 @@ class DatabaseService {
   }
 
 // set weekly rewards
-  Future<void> setWeeklyReward(
-      String familyGroupId, String title, String description) async {
+  Future<void> setWeeklyReward(String familyGroupId, String title, String description) async {
     await groupCollection.doc(familyGroupId).update({
       'weeklyRewardTitle': title,
       'weeklyRewardDescription': description,
@@ -325,8 +314,7 @@ class DatabaseService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Stream of user locations for a specific family group
-  Stream<List<UserLocation>> getFamilyGroupUserLocationsStream(
-      String familyGroupId) {
+  Stream<List<UserLocation>> getFamilyGroupUserLocationsStream(String familyGroupId) {
     return _firestore
         .collection('users')
         .where('familyGroupId', isEqualTo: familyGroupId)
@@ -341,12 +329,11 @@ class DatabaseService {
       String familyGroupId, BuildContext context) async {
     try {
       // Use the default return type without forcing a cast here.
-      DocumentSnapshot<Object?> familyGroupDoc =
-          await groupCollection.doc(familyGroupId).get();
+      DocumentSnapshot<Object?> familyGroupDoc = await groupCollection.doc(familyGroupId).get();
+
       if (familyGroupDoc.exists) {
         // Perform a safe cast to Map<String, dynamic> when accessing the data.
-        List<dynamic> memberIds =
-            (familyGroupDoc.data() as Map<String, dynamic>)['members'] ?? [];
+        List<dynamic> memberIds = (familyGroupDoc.data() as Map<String, dynamic>)['members'] ?? [];
         List<UserLocation> memberProfiles = [];
         for (var memberId in memberIds) {
           if (memberId is String) {
@@ -354,8 +341,7 @@ class DatabaseService {
                 await userCollection.doc(memberId).get();
             if (userDoc.exists) {
               // Perform a safe cast to Map<String, dynamic> when passing to fromFirestore.
-              UserLocation userProfile = UserLocation.fromFirestore(
-                  userDoc as DocumentSnapshot<Map<String, dynamic>>);
+              UserLocation userProfile = UserLocation.fromFirestore(userDoc as DocumentSnapshot<Map<String, dynamic>>);
               memberProfiles.add(userProfile);
             }
           }

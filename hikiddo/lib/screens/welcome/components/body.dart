@@ -51,6 +51,7 @@ class Body extends StatelessWidget {
                 );
               },
             ),
+            const SizedBox(height: 20),
             RoundButton(
               text: "SIGN UP",
               //textcolor: const Color.fromRGBO(4, 125, 120, 0.7),

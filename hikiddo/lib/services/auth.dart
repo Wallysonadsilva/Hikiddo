@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:hikiddo/constants.dart';
 import 'package:hikiddo/models/user.dart';
 import 'package:hikiddo/services/database.dart';
 
@@ -28,7 +29,7 @@ class AuthService {
           email: email, password: password);
       User? user = result.user;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Signed in: ${user?.email}")),
+        SnackBar(content: Text("Signed in: ${user?.email}", style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),), backgroundColor: lightBlueColor,),
       );
       return _userFromFirebaseUser(user);
     } catch (e) {
@@ -40,28 +41,51 @@ class AuthService {
   }
 
   // register with email and password
-  Future registerUser(
-      BuildContext context, String email, String password, String name) async {
-    try {
-      UserCredential result = await _auth.createUserWithEmailAndPassword(
-          email: email, password: password);
-      User? user = result.user;
+  // Change this method to return a User object
+Future<User?> registerUser(BuildContext context, String email, String password, String name) async {
+  try {
+    UserCredential result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+    User? user = result.user;
 
-      // create a new document for the user with the uid
-      await DatabaseService(uid: user!.uid)
-          .updateUserData(name, email, 'phoneNumber', password);
-      return _userFromFirebaseUser(user);
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
-      return null;
+    if (user != null) {
+      // Create a new document for the user with the uid
+      await DatabaseService(uid: user.uid).updateUserData(name, email, 'phoneNumber', password);
+      return user;  // Return the User object directly
     }
+    return null;
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('An account with this Email already exists')),
+    );
+    return null;
   }
+}
+
+  // Method to send verification email
+Future<void> sendVerificationEmail(User user, BuildContext context) async {
+  try {
+    await user.sendEmailVerification();
+    print("Verification email sent to ${user.email}");  // Debug: Check if this line executes
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Verification email has been sent to ${user.email}. Please verify to continue.')),
+    );
+  } catch (e) {
+    print("Failed to send verification email: ${e}");  // Debug: Log any errors
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Failed to send verification email: ${e.toString()}')),
+    );
+  }
+}
+
+// Method to check if email is verified
+Future<bool> isEmailVerified(User user) async {
+  await user.reload();
+  var currentUser = _auth.currentUser;
+  return currentUser!.emailVerified;
+}
 
   //fogot password
-  Future<void> sendPasswordResetEmail(
-      String email, Function(String) onMessage) async {
+  Future<void> sendPasswordResetEmail(String email, Function(String) onMessage) async {
     try {
       await _auth.sendPasswordResetEmail(email: email);
       onMessage("Password reset email sent.");

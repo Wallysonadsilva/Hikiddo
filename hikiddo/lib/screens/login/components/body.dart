@@ -97,7 +97,7 @@ class _BodyState extends State<Body> {
                                 decoration: TextDecoration.underline,
                                 decorationColor: Colors.blue),
                           )),
-      
+                          const SizedBox(height: 20),
                       RoundButton(
                         text: "LOGIN",
                         press: () async {
