@@ -6,6 +6,7 @@ import 'package:hikiddo/constants.dart';
 import 'package:hikiddo/screens/familygroup/components/background.dart';
 import 'package:hikiddo/screens/joinfamily/joinfamily_screen.dart';
 import 'package:hikiddo/screens/mainscreen/main_screen.dart';
+import 'package:hikiddo/screens/wrapper.dart';
 import 'package:hikiddo/services/database.dart';
 
 class Body extends StatefulWidget {
@@ -144,7 +145,8 @@ class BodyState extends State<Body> {
                                 onPressed: () async {
                                   await _databaseService.approveJoinRequest(
                                       groupId, doc.id);
-                                  if(context.mounted) Navigator.of(dialogContext).pop();
+                                  if (context.mounted)
+                                    Navigator.of(dialogContext).pop();
                                 },
                               ),
                               IconButton(
@@ -152,7 +154,8 @@ class BodyState extends State<Body> {
                                 onPressed: () async {
                                   await _databaseService.denyJoinRequest(
                                       groupId, doc.id);
-                                  if(context.mounted) Navigator.of(dialogContext).pop();
+                                  if (context.mounted)
+                                    Navigator.of(dialogContext).pop();
                                 },
                               ),
                             ],
@@ -212,7 +215,12 @@ class BodyState extends State<Body> {
                           return const Center(child: Text("No data found"));
                         }
                         var groupData =
-                            snapshot.data!.data() as Map<String, dynamic>;
+                            snapshot.data?.data() as Map<String, dynamic>?;
+                        if (groupData == null) {
+                          return const Center(
+                              child: Text(
+                                  "No data found or data is not in expected format."));
+                        } else {
                         List<dynamic> members = groupData['members'];
                         bool isHost = FirebaseAuth.instance.currentUser?.uid ==
                             groupData['hostId'];
@@ -334,9 +342,13 @@ class BodyState extends State<Body> {
                                 children: [
                                   Expanded(
                                     child: Padding(
-                                      padding: const EdgeInsets.only(left: 14.0, top: 8.0, bottom: 8.0),
+                                      padding: const EdgeInsets.only(
+                                          left: 14.0, top: 8.0, bottom: 8.0),
                                       child: ElevatedButton(
-                                        onPressed: () {},
+                                        onPressed: () {
+                                          _deleteFamilyGroup(
+                                              context, familyGroupId);
+                                        },
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: redColor,
                                           foregroundColor: Colors.white,
@@ -350,7 +362,8 @@ class BodyState extends State<Body> {
                                   ),
                                   Expanded(
                                     child: Padding(
-                                      padding: const EdgeInsets.only(top: 8.0, bottom: 8.0, right: 23),
+                                      padding: const EdgeInsets.only(
+                                          top: 8.0, bottom: 8.0, right: 23),
                                       child: Stack(
                                         alignment: Alignment
                                             .centerRight, // Adjust the Stack alignment as needed
@@ -368,11 +381,12 @@ class BodyState extends State<Body> {
                                                       horizontal: 22,
                                                       vertical: 20),
                                             ),
-                                            child: const Text(
-                                                "Manage Requests"),
+                                            child:
+                                                const Text("Manage Requests"),
                                           ),
                                           Positioned(
-                                            top:-5, // Adjust the badge position as needed
+                                            top:
+                                                -5, // Adjust the badge position as needed
                                             right: 10,
                                             child: StreamBuilder<QuerySnapshot>(
                                               stream: FirebaseFirestore.instance
@@ -422,12 +436,70 @@ class BodyState extends State<Body> {
                               )
                           ],
                         );
+                        }
                       },
                     ),
                   ),
                 ],
               ),
             ),
+    );
+  }
+}
+
+void _deleteFamilyGroup(BuildContext context, String? familyGroupId) async {
+  if (familyGroupId == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Invalid Family Group ID")),
+    );
+    return;
+  }
+
+  final firestore = FirebaseFirestore.instance;
+  try {
+    WriteBatch batch = firestore.batch();
+
+    // Explicitly delete the family group document
+    DocumentReference groupRef =
+        firestore.collection('familyGroup').doc(familyGroupId);
+    batch.delete(groupRef);
+
+    // Delete tasks
+    var tasksSnapshot = await firestore
+        .collection('tasks')
+        .where('familyGroupId', isEqualTo: familyGroupId)
+        .get();
+    for (var task in tasksSnapshot.docs) {
+      batch.delete(task.reference);
+    }
+
+    // Update or delete familyGroupId in users' documents
+    var usersSnapshot = await firestore
+        .collection('users')
+        .where('familyGroupId', isEqualTo: familyGroupId)
+        .get();
+    for (var doc in usersSnapshot.docs) {
+      batch.update(doc.reference, {'familyGroupId': FieldValue.delete()});
+    }
+
+    // Commit all deletions
+    await batch.commit();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+          content:
+              Text("Family group and all related data deleted successfully")),
+    );
+
+    Navigator.pushReplacement(
+      // ignore: use_build_context_synchronously
+      context,
+      MaterialPageRoute(builder: (context) => const Wrapper()),
+    );
+  } catch (e) {
+    print("Error when deleting family group and related data: $e");
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Failed to delete family group and related data")),
     );
   }
 }

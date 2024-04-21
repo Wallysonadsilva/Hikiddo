@@ -234,7 +234,7 @@ Future<BitmapDescriptor> getMarkerIconFromUrl1(String imageUrl, Size size) async
     } else {
       // Log or handle HTTP response error
       print('Failed to download the image, HTTP status code: ${response.statusCode}');
-      
+    
     }
   } catch (e) {
     // Log or handle any errors in fetching or processing the image

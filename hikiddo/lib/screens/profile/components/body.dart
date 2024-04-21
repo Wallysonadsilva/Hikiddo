@@ -2,9 +2,11 @@ import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:hikiddo/components/rounded_button.dart';
 import 'package:hikiddo/constants.dart';
 import 'package:hikiddo/models/profile.dart';
 import 'package:hikiddo/screens/profile/components/background.dart';
+import 'package:hikiddo/screens/welcome/welcome_screen.dart';
 import 'package:hikiddo/services/database.dart';
 import 'package:hikiddo/services/media_storage.dart';
 import 'package:hikiddo/utils.dart';
@@ -176,11 +178,67 @@ class BodyState extends State<Body> {
                 );
               },
             ),
+            const SizedBox(height: 20),
+            RoundButton(
+              text: 'Delete My Account',
+              press: () => _deleteAccount(context),
+          ),
           ],
         ),
       ),
     );
   }
+
+ void _deleteAccount(BuildContext context) async {
+  try {
+    final user = FirebaseAuth.instance.currentUser;
+    final uid = user?.uid;
+
+    if (uid == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("No user logged in.")),
+      );
+      return;
+    }
+
+    // Remove user from Firestore family group
+    await FirebaseFirestore.instance
+        .collection('familyGroup')
+        .where('members', arrayContains: uid)
+        .get()
+        .then((snapshot) {
+          for (var doc in snapshot.docs) {
+            doc.reference.update({
+              'members': FieldValue.arrayRemove([uid])
+            });
+          }
+        });
+
+    // Remove user's document from the users collection
+    await FirebaseFirestore.instance.collection('users').doc(uid).delete();
+
+    // Delete user account
+    await user!.delete();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Account deleted successfully")),
+    );
+
+    // Optionally, navigate the user away to a "login" or "welcome" screen
+            Navigator.pushReplacement(
+              // ignore: use_build_context_synchronously
+              context,
+              MaterialPageRoute(builder: (context) => const WelcomeScreen()),
+            );
+
+
+  } catch (e) {
+    print("Error deleting account: $e");
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Failed to delete account")),
+    );
+  }
+}
 
   Widget _userInfoRow(String label, String value, BuildContext context) {
     return Padding(

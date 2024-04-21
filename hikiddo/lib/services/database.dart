@@ -8,35 +8,33 @@ import 'package:location/location.dart';
 
 class DatabaseService {
   final String? uid;
-  DatabaseService({this.uid});
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final CollectionReference userCollection;
+  final CollectionReference groupCollection;
+  final CollectionReference tasksCollection;
 
-  //collection reference
-  final CollectionReference userCollection = FirebaseFirestore.instance.collection('users');
-  final CollectionReference groupCollection = FirebaseFirestore.instance.collection('familyGroup');
-  final CollectionReference tasksCollection = FirebaseFirestore.instance.collection('tasks');
+  DatabaseService({this.uid})
+      : userCollection = FirebaseFirestore.instance.collection('users'),
+        groupCollection = FirebaseFirestore.instance.collection('familyGroup'),
+        tasksCollection = FirebaseFirestore.instance.collection('tasks');
 
-  //STREAM
-  //Fetch the current users profile data
+  // Fetch the current user's profile data
   Stream<Profile> get currentUserProfile {
-    String? uid = FirebaseAuth.instance.currentUser?.uid; // Ensure you have the user's UID
+    String? uid = FirebaseAuth.instance.currentUser?.uid;
     return userCollection.doc(uid).snapshots().map(_profileFromSnapshot);
   }
 
-  //Fetch the avaible tasks for the current family group
-  Stream<List<Task>> getFamilyGroupTasks(String familyGroupId) {
-    return FirebaseFirestore.instance
-        .collection('tasks')
-        .where('familyGroupId', isEqualTo: familyGroupId)
-        .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => Task.fromFirestore(doc.data(), doc.id)).toList());
-  }
+  // Fetch the available tasks for the current family group
+ Stream<List<Task>> getFamilyGroupTasks(String familyGroupId) {
+  return tasksCollection
+      .where('familyGroupId', isEqualTo: familyGroupId)
+      .snapshots()
+      .map((snapshot) =>
+          snapshot.docs.map((doc) => Task.fromFirestore(doc.data() as Map<String, dynamic>, doc.id)).toList());
+}
 
-  //LIST OF METHODS UPDATETING AND FETCHING DATA FROM FIREABASE
-
-  //update user information on profile screen
-  Future updateUserData(
-      String name, String email, String phoneNumber, String password) async {
-    return await userCollection.doc(uid).set({
+  Future<void> updateUserData(String name, String email, String phoneNumber, String password) async {
+    await userCollection.doc(uid).set({
       'name': name,
       'email': email,
       'phoneNumber': phoneNumber,
@@ -44,93 +42,64 @@ class DatabaseService {
     });
   }
 
-  // Convert DocumentSnapshot into a Profile object
   Profile _profileFromSnapshot(DocumentSnapshot snapshot) {
     if (snapshot.exists) {
-      Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+      var data = snapshot.data() as Map<String, dynamic>;
       return Profile(
         name: data['name'] ?? '',
         email: data['email'] ?? '',
         phoneNumber: data['phoneNumber'] ?? '',
       );
     } else {
-      // Return a empty Profile if the document doesn't exist
       return Profile(name: '', email: '', phoneNumber: '');
     }
   }
 
-  //Update a specific field in the users collection
   Future<void> safeUpdateUserDataField(String uid, String field, dynamic newValue) async {
-    var docRef = FirebaseFirestore.instance.collection('users').doc(uid);
-    return await docRef.set({field: newValue}, SetOptions(merge: true));
+    await userCollection.doc(uid).set({field: newValue}, SetOptions(merge: true));
   }
 
-  //Search for family group
-  Future<List<String>> searchGroups(String query) async {
-    final querySnapshot = await FirebaseFirestore.instance
-        .collection('familyGroup')
-        .where('name', isGreaterThanOrEqualTo: query)
-        .where('name', isLessThan: '${query}z')
-        .get();
+Future<List<String>> searchGroups(String query) async {
+  var querySnapshot = await groupCollection
+      .where('name', isGreaterThanOrEqualTo: query)
+      .where('name', isLessThan: '${query}z')
+      .get();
 
-    final groupNames = querySnapshot.docs.map((doc) => doc.data()['name'] as String).toList();
-    return groupNames;
-  }
+  // Cast each document's data to Map<String, dynamic> before accessing it with []
+  return querySnapshot.docs
+      .map((doc) => (doc.data() as Map<String, dynamic>)['name'] as String?) // Safe cast to Map<String, dynamic>
+      .where((name) => name != null) // Filter out any nulls that might still be present
+      .map((name) => name!) // This cast is safe because we filtered out nulls
+      .toList();
+}
 
-  //Create new family group and set current user as host
   Future<FamilyGroupCreationResult> createGroup(String groupName) async {
-    final currentUid = FirebaseAuth.instance.currentUser?.uid;
+    var currentUid = FirebaseAuth.instance.currentUser?.uid;
     if (currentUid == null) {
-      return FamilyGroupCreationResult(
-          success: false, message: 'No user signed in');
+      return FamilyGroupCreationResult(success: false, message: 'No user signed in');
     }
-
-    final querySnapshot =
-        await groupCollection.where('name', isEqualTo: groupName).get();
-
+    var querySnapshot = await groupCollection.where('name', isEqualTo: groupName).get();
     if (querySnapshot.docs.isEmpty) {
-      // Create the group and get the reference to the newly created document
-      DocumentReference groupDocRef = await groupCollection.add({
+      var groupDocRef = await groupCollection.add({
         'name': groupName,
         'hostId': currentUid,
         'members': [currentUid],
         'created_at': FieldValue.serverTimestamp(),
       });
-
-      // Use the document reference (groupDocRef) to get the group ID
-      String groupId = groupDocRef.id;
-
-      // Update the current user's document with the new group ID
-      DocumentReference userRef = userCollection.doc(currentUid);
-      await userRef.set({
-        'familyGroupId': groupId,
-      }, SetOptions(merge: true));
-
+      var groupId = groupDocRef.id;
+      await userCollection.doc(currentUid).set({'familyGroupId': groupId}, SetOptions(merge: true));
       return FamilyGroupCreationResult(success: true, message: 'Group created successfully');
     } else {
-      return FamilyGroupCreationResult(
-          success: false, message: 'A group with this name already exists.');
+      return FamilyGroupCreationResult(success: false, message: 'A group with this name already exists.');
     }
   }
 
-  //Join family group
   Future<void> joinGroup(String groupId) async {
-    final String? userId = FirebaseAuth.instance.currentUser?.uid;
+    var userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) throw Exception('No user signed in');
-
-    DocumentReference groupRef = FirebaseFirestore.instance.collection('familyGroup').doc(groupId);
-
-    //Add user to the group's members list
-    await groupRef.update({
-      'members': FieldValue.arrayUnion([userId]),
-    });
-
-    //Add familyGroup ID to users collection
-    DocumentReference userRef = userCollection.doc(userId);
-
-    return await userRef.set({
-      'familyGroupId': groupId,
-    }, SetOptions(merge: true));
+    var groupRef = groupCollection.doc(groupId);
+    await groupRef.update({'members': FieldValue.arrayUnion([userId])});
+    await userCollection.doc(userId).set({'familyGroupId': groupId}, SetOptions(merge: true));
   }
 
     // Method to send a join request
@@ -142,144 +111,120 @@ class DatabaseService {
     });
   }
 
-    // Method for the host to approve a join request
+  // Method for the host to approve a join request
   Future<void> approveJoinRequest(String groupId, String userId) async {
-    // Move user to the group's member list
-    await _firestore.collection('familyGroup').doc(groupId).update({
+    var batch = _firestore.batch();
+    var groupRef = _firestore.collection('familyGroup').doc(groupId);
+    batch.update(groupRef, {
       'members': FieldValue.arrayUnion([userId])
     });
-    // Update the request status to approved
-    await _firestore.collection('familyGroup').doc(groupId)
-        .collection('joinRequests').doc(userId).update({
+    var joinRequestRef = groupRef.collection('joinRequests').doc(userId);
+    batch.update(joinRequestRef, {
       'status': 'approved'
     });
-
-       //Add familyGroup ID to users collection
-    DocumentReference userRef = userCollection.doc(userId);
-
-    return await userRef.set({
+    var userRef = userCollection.doc(userId);
+    batch.set(userRef, {
       'familyGroupId': groupId,
     }, SetOptions(merge: true));
+    await batch.commit();
   }
 
-    // Method for the host to deny a join request
+  // Method for the host to deny a join request
   Future<void> denyJoinRequest(String groupId, String userId) async {
-    // Update the request status to denied
-    await _firestore.collection('familyGroup').doc(groupId)
-        .collection('joinRequests').doc(userId).update({
+    var joinRequestRef = _firestore.collection('familyGroup').doc(groupId)
+        .collection('joinRequests').doc(userId);
+    await joinRequestRef.update({
       'status': 'denied'
     });
   }
 
-  //retrived familygroup id using the name of the family group
-  // Method to retrieve a group's ID based on its name
-  Future<String?> getFamilyGroupIdFromName(
-      BuildContext context, String groupName) async {
+  // Retrieve a group's ID based on its name
+  Future<String?> getFamilyGroupIdFromName(BuildContext context, String groupName) async {
     try {
-      var querySnapshot = await FirebaseFirestore.instance
-          .collection('familyGroup')
-          .where('name', isEqualTo: groupName)
-          .limit(1)
-          .get();
-
+      var querySnapshot = await groupCollection.where('name', isEqualTo: groupName).limit(1).get();
       if (querySnapshot.docs.isNotEmpty) {
-        return querySnapshot
-            .docs.first.id; // Return the first (and should be only) group ID
+        return querySnapshot.docs.first.id;
       } else {
-        return null; // No group found with this name
+        return null;
       }
     } catch (e) {
-      // ignore: use_build_context_synchronously
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error retrieving group ID: $e")),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error retrieving group ID: $e")));
       return null;
     }
   }
 
-  //retrived familygroupId from users collection
+  // Retrieve family group ID from user's collection
   Future<String?> getFamilyGroupId(BuildContext context) async {
     User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) return null; // User not logged in
-
+    if (user == null) return null;
     try {
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .get();
-      // Cast the data to a Map<String, dynamic> before using the [] operator
+      DocumentSnapshot userDoc = await userCollection.doc(user.uid).get();
       Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
       return userData['familyGroupId'];
     } catch (e) {
-      // ignore: use_build_context_synchronously
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error fetching family group ID: $e")),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error fetching family group ID: $e")));
       return null;
     }
   }
 
-  //get hostId for from familyGroup
-  Future<String?> getFamilyGroupHostId(
-      BuildContext context, String familyGroupId) async {
+  // Get host ID from family group
+  Future<String?> getFamilyGroupHostId(BuildContext context, String familyGroupId) async {
     try {
-      DocumentSnapshot groupDoc =
-          await groupCollection.doc(familyGroupId).get();
+      DocumentSnapshot groupDoc = await groupCollection.doc(familyGroupId).get();
       if (groupDoc.exists) {
         Map<String, dynamic> data = groupDoc.data() as Map<String, dynamic>;
-        return data['hostId'] as String?;
+        return data['hostId'];
       } else {
-        return null; // Group not found
+        return null;
       }
     } catch (e) {
-      // ignore: use_build_context_synchronously
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error retrieving family group host ID: $e")),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error retrieving family group host ID: $e")));
       return null;
     }
   }
 
+  // Remove a member from a family group
   Future<void> removeMemberFromFamilyGroup(String familyGroupId, String memberUid) async {
-    DocumentReference groupRef =_firestore.collection('familyGroup').doc(familyGroupId);
-    return await groupRef.update({
-      'members': FieldValue.arrayRemove([memberUid])
-    }).catchError((error) {
+    try {
+      DocumentReference groupRef = groupCollection.doc(familyGroupId);
+      await groupRef.update({
+        'members': FieldValue.arrayRemove([memberUid])
+      });
+    } catch (error) {
       throw Exception('Failed to remove member: $error');
-    });
+    }
   }
 
-  // update the task status
+  // Update task status
   Future<void> taskStatus(String taskId, bool currentStatus) async {
-    return tasksCollection.doc(taskId).update({
+    await tasksCollection.doc(taskId).update({
       'status': !currentStatus,
     });
   }
 
-  // add task
-  Future<DocumentReference<Object?>> addTask(
-      String familyGroupId, String title, int points) async {
+  // Add a task to the tasks collection
+  Future<DocumentReference<Object?>> addTask(String familyGroupId, String title, int points) async {
     return await tasksCollection.add({
       'familyGroupId': familyGroupId,
       'title': title,
       'points': points,
-      'status': false, // Assuming tasks are not completed by default
+      'status': false
     });
   }
 
-  //delete tasks
+  // Delete a task from the tasks collection
   Future<void> deleteTask(String taskId) async {
     await tasksCollection.doc(taskId).delete();
   }
 
-  //update user points after completing a task
+  // Update user points after completing a task
   Future<void> updateUserPoints(String userId, int pointsToAdd) async {
-    return await userCollection.doc(userId).set({
+    await userCollection.doc(userId).set({
       'points': FieldValue.increment(pointsToAdd),
     }, SetOptions(merge: true));
   }
 
-// set weekly rewards
+// Set weekly rewards for a family group
   Future<void> setWeeklyReward(String familyGroupId, String title, String description) async {
     await groupCollection.doc(familyGroupId).update({
       'weeklyRewardTitle': title,
@@ -287,23 +232,19 @@ class DatabaseService {
     });
   }
 
-//reset points from family members
+// Reset points for all members of a family group
   Future<void> resetFamilyGroupPoints(String familyGroupId) async {
-    // Fetch all users in the family group
-    var snapshot = await userCollection
-        .where('familyGroupId', isEqualTo: familyGroupId)
-        .get();
+    var snapshot = await userCollection.where('familyGroupId', isEqualTo: familyGroupId).get();
     for (var doc in snapshot.docs) {
-      // Reset points for each user
       userCollection.doc(doc.id).update({'points': 0});
     }
   }
 
-  // update Latitute and longitude on users collection
+  // Update latitude and longitude in the users collection
   Future<void> updateUserLocation(LocationData locationData) async {
     final String? userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId != null) {
-      await FirebaseFirestore.instance.collection('users').doc(userId).update({
+      await userCollection.doc(userId).update({
         'lat': locationData.latitude,
         'lng': locationData.longitude,
         'locationUpdateTimestamp': FieldValue.serverTimestamp(),
@@ -311,37 +252,38 @@ class DatabaseService {
     }
   }
 
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Stream of user locations for a specific family group
-  Stream<List<UserLocation>> getFamilyGroupUserLocationsStream(String familyGroupId) {
-    return _firestore
-        .collection('users')
-        .where('familyGroupId', isEqualTo: familyGroupId)
-        .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => UserLocation.fromFirestore(doc))
-            .toList());
-  }
+ Stream<List<UserLocation>> getFamilyGroupUserLocationsStream(String familyGroupId) {
+  return _firestore
+      .collection('users')
+      .where('familyGroupId', isEqualTo: familyGroupId)
+      .snapshots()
+      .map((snapshot) {
+        try {
+          return snapshot.docs
+              .map((doc) => UserLocation.fromFirestore(doc as DocumentSnapshot<Map<String, dynamic>>))  // Cast DocumentSnapshot to the expected generic type
+              .toList();
+        } catch (e) {
+          rethrow;
+        }
+      });
+}
+
+
 
 // Fetch user locations based on family group member IDs
-  Future<List<UserLocation>> fetchFamilyGroupUserLocations(
-      String familyGroupId, BuildContext context) async {
+  Future<List<UserLocation>> fetchFamilyGroupUserLocations(String familyGroupId, BuildContext context) async {
     try {
-      // Use the default return type without forcing a cast here.
       DocumentSnapshot<Object?> familyGroupDoc = await groupCollection.doc(familyGroupId).get();
-
       if (familyGroupDoc.exists) {
-        // Perform a safe cast to Map<String, dynamic> when accessing the data.
         List<dynamic> memberIds = (familyGroupDoc.data() as Map<String, dynamic>)['members'] ?? [];
         List<UserLocation> memberProfiles = [];
         for (var memberId in memberIds) {
           if (memberId is String) {
-            DocumentSnapshot<Object?> userDoc =
-                await userCollection.doc(memberId).get();
+            DocumentSnapshot<Object?> userDoc = await userCollection.doc(memberId).get();
             if (userDoc.exists) {
-              // Perform a safe cast to Map<String, dynamic> when passing to fromFirestore.
-              UserLocation userProfile = UserLocation.fromFirestore(userDoc as DocumentSnapshot<Map<String, dynamic>>);
+              UserLocation userProfile = UserLocation.fromFirestore(userDoc.data() as DocumentSnapshot<Map<String, dynamic>>);
               memberProfiles.add(userProfile);
             }
           }
@@ -351,8 +293,8 @@ class DatabaseService {
         return []; // Return an empty list if the family group document does not exist.
       }
     } catch (e) {
-      if(context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar( const SnackBar(content: Text("Error fetching family group user locations")),);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error fetching family group user locations: $e")));
       }
       return [];
     }
