@@ -41,7 +41,6 @@ class AuthService {
   }
 
   // register with email and password
-  // Change this method to return a User object
 Future<User?> registerUser(BuildContext context, String email, String password, String name) async {
   try {
     UserCredential result = await _auth.createUserWithEmailAndPassword(email: email, password: password);

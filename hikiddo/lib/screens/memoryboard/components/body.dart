@@ -247,155 +247,157 @@ Future<void> _playVideo(Uri url) async {
   @override
   Widget build(BuildContext context) {
     // Fetch and update images when the family group ID is availab
-    return Scaffold(
-      appBar: TopNavigationBar(showBackButton: true),
-      body: familyGroupId == null ? const JoinFamilyScreen() : Background(
-        child: familyGroupId == null
-            ? const Center(child: Text("Loading..."))
-            : Column(
-                children: [
-                  const SizedBox(height: 20),
-                  const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text(
-                      "Family Memories",
-                      style: TextStyle(
-                          fontSize: 28.0,
-                          fontWeight: FontWeight.bold,
-                          color: redColor),
+    return PopScope(canPop: false,
+      child: Scaffold(
+        appBar: TopNavigationBar(showBackButton: true),
+        body: familyGroupId == null ? const JoinFamilyScreen() : Background(
+          child: familyGroupId == null
+              ? const Center(child: Text("Loading..."))
+              : Column(
+                  children: [
+                    const SizedBox(height: 20),
+                    const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text(
+                        "Family Memories",
+                        style: TextStyle(
+                            fontSize: 28.0,
+                            fontWeight: FontWeight.bold,
+                            color: redColor),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  Expanded(
-                    child: _mediaItems.isEmpty
-                        ? const Center(child: Text("No media found"))
-                        : Container(
-                            padding: const EdgeInsets.all(9.0),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: GridView.builder(
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 3,
-                                childAspectRatio: 1,
-                                mainAxisSpacing: 4,
-                                crossAxisSpacing: 4,
+                    const SizedBox(height: 20),
+                    Expanded(
+                      child: _mediaItems.isEmpty
+                          ? const Center(child: Text("No media found"))
+                          : Container(
+                              padding: const EdgeInsets.all(9.0),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(20),
                               ),
-                              itemCount: _mediaItems.length,
-                              itemBuilder: (context, index) {
-                                final mediaItem = _mediaItems[index];
-                                Uri videoUri = Uri.parse(mediaItem.url);
-                                return GestureDetector(
-                                  onTap: () => mediaItem.isVideo
-                                      ? _playVideo(videoUri)
-                                      : _showFullImageDialog(
-                                          context, mediaItem.url),
-                                  child: mediaItem.isVideo
-                                      ? FutureBuilder<Widget>(
-                                          future:
-                                              _videoThumbnail(mediaItem.url),
-                                          builder: (BuildContext context,
-                                              AsyncSnapshot<Widget> snapshot) {
-                                            if (snapshot.connectionState ==
-                                                    ConnectionState.done &&
-                                                snapshot.hasData) {
-                                              // Wrap the snapshot.data in a container to ensure it fills the space
-                                              return Container(
-                                                decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(10),
-                                                ),
-                                                clipBehavior: Clip
-                                                    .antiAlias, // Ensures the content is clipped to the border radius
-                                                child: Stack(
-                                                  alignment: Alignment.center,
-                                                  children: [
-                                                    Positioned.fill(
-                                                      // This will ensure the thumbnail image fills the container
-                                                      child: snapshot
-                                                          .data!, // Assuming this is an Image widget
-                                                    ),
-                                                    // Semi-transparent overlay to improve the visibility of the icon
-                                                    Container(
-                                                      decoration:
-                                                          const BoxDecoration(
-                                                        color: Colors.black45,
+                              child: GridView.builder(
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 3,
+                                  childAspectRatio: 1,
+                                  mainAxisSpacing: 4,
+                                  crossAxisSpacing: 4,
+                                ),
+                                itemCount: _mediaItems.length,
+                                itemBuilder: (context, index) {
+                                  final mediaItem = _mediaItems[index];
+                                  Uri videoUri = Uri.parse(mediaItem.url);
+                                  return GestureDetector(
+                                    onTap: () => mediaItem.isVideo
+                                        ? _playVideo(videoUri)
+                                        : _showFullImageDialog(
+                                            context, mediaItem.url),
+                                    child: mediaItem.isVideo
+                                        ? FutureBuilder<Widget>(
+                                            future:
+                                                _videoThumbnail(mediaItem.url),
+                                            builder: (BuildContext context,
+                                                AsyncSnapshot<Widget> snapshot) {
+                                              if (snapshot.connectionState ==
+                                                      ConnectionState.done &&
+                                                  snapshot.hasData) {
+                                                // Wrap the snapshot.data in a container to ensure it fills the space
+                                                return Container(
+                                                  decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(10),
+                                                  ),
+                                                  clipBehavior: Clip
+                                                      .antiAlias, // Ensures the content is clipped to the border radius
+                                                  child: Stack(
+                                                    alignment: Alignment.center,
+                                                    children: [
+                                                      Positioned.fill(
+                                                        // This will ensure the thumbnail image fills the container
+                                                        child: snapshot
+                                                            .data!, // Assuming this is an Image widget
                                                       ),
-                                                    ),
-                                                    const Icon(
-                                                        Icons
-                                                            .play_circle_outline,
-                                                        color: Colors.white,
-                                                        size: 40), // Play icon
-                                                  ],
-                                                ),
-                                              );
-                                            } else {
-                                              // Loading or error state
-                                              return Container(
-                                                decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(10),
-                                                  color: Colors.black38,
-                                                ),
-                                                child: const Center(
-                                                  child:
-                                                      CircularProgressIndicator(
-                                                          color: Colors.white),
-                                                ),
-                                              );
-                                            }
-                                          },
-                                        )
-                                      : _imageThumbnail(mediaItem
-                                          .url), // Display image thumbnail for non-video items
-                                );
-                              },
-                            )),
-                  ),
-                ],
+                                                      // Semi-transparent overlay to improve the visibility of the icon
+                                                      Container(
+                                                        decoration:
+                                                            const BoxDecoration(
+                                                          color: Colors.black45,
+                                                        ),
+                                                      ),
+                                                      const Icon(
+                                                          Icons
+                                                              .play_circle_outline,
+                                                          color: Colors.white,
+                                                          size: 40), // Play icon
+                                                    ],
+                                                  ),
+                                                );
+                                              } else {
+                                                // Loading or error state
+                                                return Container(
+                                                  decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(10),
+                                                    color: Colors.black38,
+                                                  ),
+                                                  child: const Center(
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                            color: Colors.white),
+                                                  ),
+                                                );
+                                              }
+                                            },
+                                          )
+                                        : _imageThumbnail(mediaItem
+                                            .url), // Display image thumbnail for non-video items
+                                  );
+                                },
+                              )),
+                    ),
+                  ],
+                ),
+        ),
+        floatingActionButton: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            FloatingActionButton(
+              backgroundColor: Colors.white,
+              onPressed: _pickMediaFromGallery,
+              heroTag: 'gallery',
+              tooltip: 'Add from Gallery',
+              child: const Icon(
+                Icons.photo_library,
+                color: Colors.blueGrey,
               ),
+            ),
+            const SizedBox(width: 20),
+            FloatingActionButton(
+              backgroundColor: Colors.white,
+              onPressed: _capturePhoto,
+              heroTag: 'camera',
+              tooltip: 'Use Camera',
+              child: const Icon(
+                Icons.camera_alt,
+                color: Colors.blueGrey,
+              ),
+            ),
+            const SizedBox(width: 20),
+            FloatingActionButton(
+              backgroundColor: Colors.white,
+              onPressed: _captureVideo,
+              heroTag: 'video',
+              tooltip: 'Record Video',
+              child: const Icon(
+                Icons.videocam,
+                color: Colors.blueGrey,
+              ),
+            ),
+          ],
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       ),
-      floatingActionButton: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          FloatingActionButton(
-            backgroundColor: Colors.white,
-            onPressed: _pickMediaFromGallery,
-            heroTag: 'gallery',
-            tooltip: 'Add from Gallery',
-            child: const Icon(
-              Icons.photo_library,
-              color: Colors.blueGrey,
-            ),
-          ),
-          const SizedBox(width: 20),
-          FloatingActionButton(
-            backgroundColor: Colors.white,
-            onPressed: _capturePhoto,
-            heroTag: 'camera',
-            tooltip: 'Use Camera',
-            child: const Icon(
-              Icons.camera_alt,
-              color: Colors.blueGrey,
-            ),
-          ),
-          const SizedBox(width: 20),
-          FloatingActionButton(
-            backgroundColor: Colors.white,
-            onPressed: _captureVideo,
-            heroTag: 'video',
-            tooltip: 'Record Video',
-            child: const Icon(
-              Icons.videocam,
-              color: Colors.blueGrey,
-            ),
-          ),
-        ],
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 

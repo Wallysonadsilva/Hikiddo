@@ -38,7 +38,6 @@ class DatabaseService {
       'name': name,
       'email': email,
       'phoneNumber': phoneNumber,
-      'password': password
     });
   }
 

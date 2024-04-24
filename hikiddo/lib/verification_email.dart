@@ -16,10 +16,10 @@ class EmailVerifyPage extends StatelessWidget {
               'Verification email has been sent to your email. Please verify to continue.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: orangeColor, // Sets the color of the text
-                fontSize: 16, // Sets the size of the font
-                fontStyle: FontStyle.italic, // Adds italics
-                fontWeight: FontWeight.bold, // Makes the font bold
+                color: orangeColor,
+                fontSize: 16,
+                fontStyle: FontStyle.italic,
+                fontWeight: FontWeight.bold,
               ),
             ),
             SizedBox(height: 20.0,),

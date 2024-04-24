@@ -258,125 +258,127 @@ Future<void> _fetchAndStoreHostId(String familyGroupId) async {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: TopNavigationBar(showBackButton: true),
-      body: familyGroupId == null ? const JoinFamilyScreen() : Background(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Text(
-                'Voice Rec.',
-                style: TextStyle(
-                    color: redColor,
-                    fontSize: 28.0,
-                    fontWeight: FontWeight.bold),
-              ),
-            ),
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.all(8.0),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
+    return PopScope(canPop: false,
+      child: Scaffold(
+        appBar: TopNavigationBar(showBackButton: true),
+        body: familyGroupId == null ? const JoinFamilyScreen() : Background(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text(
+                  'Storyteller',
+                  style: TextStyle(
+                      color: redColor,
+                      fontSize: 28.0,
+                      fontWeight: FontWeight.bold),
                 ),
-                child: ListView.builder(
-                  itemCount: recordings.length,
-                  itemBuilder: (context, index) {
-                    final recording = recordings[index];
-                    final String currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
-                    final bool canDelete = recording.userId == currentUserId || hostId == currentUserId;
-                    String formattedDate = DateFormat('dd-MM-yyyy – kk:mm')
-                        .format(recording.date.toLocal()); // Adjust based on your date type
-
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 8.0, horizontal: 16.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Date: $formattedDate",
-                                  style: const TextStyle(
-                                      color: orangeColor,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                Row(
-                                  children: [
-                                    RichText(
-                                      text: TextSpan(
-                                        children: [
-                                          const TextSpan(
-                                            text: "Title: ",
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight
-                                                  .bold, // Make "Title:" bold
-                                              color: Colors
-                                                  .black, // Specify the color for the text
+              ),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(8.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: ListView.builder(
+                    itemCount: recordings.length,
+                    itemBuilder: (context, index) {
+                      final recording = recordings[index];
+                      final String currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
+                      final bool canDelete = recording.userId == currentUserId || hostId == currentUserId;
+                      String formattedDate = DateFormat('dd-MM-yyyy – kk:mm')
+                          .format(recording.date.toLocal()); // Adjust based on your date type
+      
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8.0, horizontal: 16.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Date: $formattedDate",
+                                    style: const TextStyle(
+                                        color: orangeColor,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  Row(
+                                    children: [
+                                      RichText(
+                                        text: TextSpan(
+                                          children: [
+                                            const TextSpan(
+                                              text: "Title: ",
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight
+                                                    .bold, // Make "Title:" bold
+                                                color: Colors
+                                                    .black, // Specify the color for the text
+                                              ),
                                             ),
-                                          ),
-                                          TextSpan(
-                                            text: recording.title,
-                                            style: const TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight
-                                                  .normal, // Keep the recording title in normal weight
-                                              color:
-                                                  greenColor, // Specify the color for the text
+                                            TextSpan(
+                                              text: recording.title,
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight
+                                                    .normal, // Keep the recording title in normal weight
+                                                color:
+                                                    greenColor, // Specify the color for the text
+                                              ),
                                             ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                    TextButton.icon(
-                                      onPressed: () =>
-                                          _editTitleDialog(recordings[index]),
-                                      icon: const Icon(Icons.edit_note,
-                                          color: Colors.grey),
-                                      label: const Text(""),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                                      TextButton.icon(
+                                        onPressed: () =>
+                                            _editTitleDialog(recordings[index]),
+                                        icon: const Icon(Icons.edit_note,
+                                            color: Colors.grey),
+                                        label: const Text(""),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                          IconButton(
-                            icon: Icon(
-                              _currentlyPlayingUrl == recordings[index].fileUrl
-                                  ? Icons.stop
-                                  : Icons.play_arrow,
+                            IconButton(
+                              icon: Icon(
+                                _currentlyPlayingUrl == recordings[index].fileUrl
+                                    ? Icons.stop
+                                    : Icons.play_arrow,
+                              ),
+                              onPressed: () =>
+                                  _togglePlayStop(recordings[index].fileUrl),
                             ),
-                            onPressed: () =>
-                                _togglePlayStop(recordings[index].fileUrl),
-                          ),
-                          if(canDelete)
-                            IconButton(onPressed: () => _confirmDeleteRecording(recording.id), icon: const Icon(Icons.delete, color: redColor,))
-                        ],
-                      ),
-                    );
-                  },
+                            if(canDelete)
+                              IconButton(onPressed: () => _confirmDeleteRecording(recording.id), icon: const Icon(Icons.delete, color: redColor,))
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.white,
-        onPressed: _toggleRecording,
-        child: Icon(
-          isRecording ? Icons.stop : Icons.mic,
-          color: Colors.red,
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: Colors.white,
+          onPressed: _toggleRecording,
+          child: Icon(
+            isRecording ? Icons.stop : Icons.mic,
+            color: Colors.red,
+          ),
         ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }

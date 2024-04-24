@@ -13,100 +13,102 @@ class Body extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     //Size size = MediaQuery.of(context).size;
-    return Background(
-      child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            const Padding(
-              padding: EdgeInsets.all(18.0),
-              child: Text(
-                "Dashboard",
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 28.0,
-                    fontWeight: FontWeight.bold),
-                textAlign: TextAlign.start,
+    return PopScope(canPop: false,
+      child: Background(
+        child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              const Padding(
+                padding: EdgeInsets.all(18.0),
+                child: Text(
+                  "Dashboard",
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 28.0,
+                      fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.start,
+                ),
               ),
-            ),
-            Wrap(
-              spacing: 8.0, // Space between the DashboardSquares
-              alignment:
-                  WrapAlignment.center, // Center the squares within the Wrap
-              children: <Widget>[
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) {
-                          return const MemoryBoardPage();
-                        },
-                      ),
-                    );
-                  },
-                  child: const DashboardSquare(
-                    cardText: "Memories",
-                    imagePath: "assets/images/memoryboard.png",
+              Wrap(
+                spacing: 8.0, // Space between the DashboardSquares
+                alignment:
+                    WrapAlignment.center, // Center the squares within the Wrap
+                children: <Widget>[
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) {
+                            return const MemoryBoardPage();
+                          },
+                        ),
+                      );
+                    },
+                    child: const DashboardSquare(
+                      cardText: "Memories",
+                      imagePath: "assets/images/memoryboard.png",
+                    ),
                   ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) {
-                          return const RecordVoicePage();
-                        },
-                      ),
-                    );
-                  },
-                  child: const DashboardSquare(
-                    cardText: "Voice Rec.",
-                    imagePath: "assets/images/joinFamily_bottom.png",
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) {
+                            return const RecordVoicePage();
+                          },
+                        ),
+                      );
+                    },
+                    child: const DashboardSquare(
+                      cardText: "Storyteller",
+                      imagePath: "assets/images/joinFamily_bottom.png",
+                    ),
                   ),
-                ),
-              ],
-            ),
-            Wrap(
-              spacing: 8.0, // Space between the DashboardSquares
-              alignment:
-                  WrapAlignment.center, // Center the squares within the Wrap
-              children: <Widget>[
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) {
-                          return const TaskScreen();
-                        },
-                      ),
-                    );
-                  },
-                  child: const DashboardSquare(
-                    cardText: "Challenges",
-                    imagePath: "assets/images/challenges.png",
+                ],
+              ),
+              Wrap(
+                spacing: 8.0, // Space between the DashboardSquares
+                alignment:
+                    WrapAlignment.center, // Center the squares within the Wrap
+                children: <Widget>[
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) {
+                            return const TaskScreen();
+                          },
+                        ),
+                      );
+                    },
+                    child: const DashboardSquare(
+                      cardText: "Challenges",
+                      imagePath: "assets/images/challenges.png",
+                    ),
                   ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) {
-                          return const FamilyGroupPage();
-                        },
-                      ),
-                    );
-                  },
-                  child: const DashboardSquare(
-                    cardText: "Family Group",
-                    imagePath: "assets/images/joinFamily_bottom.png",
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) {
+                            return const FamilyGroupPage();
+                          },
+                        ),
+                      );
+                    },
+                    child: const DashboardSquare(
+                      cardText: "Family Group",
+                      imagePath: "assets/images/joinFamily_bottom.png",
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ]),
+                ],
+              ),
+            ]),
+      ),
     );
   }
 }

@@ -26,46 +26,48 @@ class BodyState extends State<Body> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: greenColor,
-        title: const Text('HIKIDDO!', style: TextStyle(color: Colors.white)),
-      ),
-      body: Background(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            minHeight: size
-                .height, // Ensures the column expands to at least the height of the screen
-          ),
-          child: IntrinsicHeight(
-            // This ensures the column doesn't stretch beyond its intrinsic height
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                const Text(
-                  "RESET PASSWORD",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: greenColor,
-                    fontSize: 24,
+    return PopScope(canPop: false,
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: greenColor,
+          title: const Text('HIKIDDO!', style: TextStyle(color: Colors.white)),
+        ),
+        body: Background(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: size
+                  .height, // Ensures the column expands to at least the height of the screen
+            ),
+            child: IntrinsicHeight(
+              // This ensures the column doesn't stretch beyond its intrinsic height
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  const Text(
+                    "RESET PASSWORD",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: greenColor,
+                      fontSize: 24,
+                    ),
                   ),
-                ),
-                SizedBox(height: size.height * 0.02),
-                RoundedInputField(
-                  icon: Icons.mail,
-                  iconColor: Colors.grey,
-                  hintText: "          Enter email",
-                  controllers: _emailController,
-                  onChanged: (value) {},
-                ),
-                SizedBox(height: size.height * 0.01),
-                RoundButton(
-                  text: "send",
-                  color: greenColor,
-                  press: sentResetLink,
-                ),
-                SizedBox(height: size.height * 0.15),
-              ],
+                  SizedBox(height: size.height * 0.02),
+                  RoundedInputField(
+                    icon: Icons.mail,
+                    iconColor: Colors.grey,
+                    hintText: "          Enter email",
+                    controllers: _emailController,
+                    onChanged: (value) {},
+                  ),
+                  SizedBox(height: size.height * 0.01),
+                  RoundButton(
+                    text: "send",
+                    color: greenColor,
+                    press: sentResetLink,
+                  ),
+                  SizedBox(height: size.height * 0.15),
+                ],
+              ),
             ),
           ),
         ),

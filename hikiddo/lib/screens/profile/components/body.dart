@@ -107,87 +107,6 @@ class BodyState extends State<Body> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    // Build method moved inside the state class
-    return Background(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: <Widget>[
-            Stack(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(4), // Size of the border
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors
-                        .transparent, // Ensure the Container background is transparent
-                    border: Border.all(
-                      color: greenColor
-                          .withOpacity(0.5), // Blue border with 50% opacity
-                      width: 4, // Border thickness
-                    ),
-                  ),
-                  child: _imageURL != null
-                      ? CircleAvatar(
-                          radius: 64,
-                          backgroundImage: NetworkImage(_imageURL!),
-                        )
-                      : const CircleAvatar(
-                          radius: 64.0,
-                          backgroundImage: NetworkImage(
-                              'https://t3.ftcdn.net/jpg/02/09/37/00/360_F_209370065_JLXhrc5inEmGl52SyvSPeVB23hB6IjrR.jpg'),
-                          backgroundColor: Colors.transparent,
-                        ),
-                ),
-                Positioned(
-                  bottom: -10,
-                  left: 80,
-                  child: IconButton(
-                      onPressed: selectImage,
-                      icon: const Icon(
-                        Icons.add_a_photo,
-                        color: yellowColor,
-                      )),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            StreamBuilder<Profile>(
-              stream:
-                  DatabaseService(uid: FirebaseAuth.instance.currentUser?.uid)
-                      .currentUserProfile,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator();
-                }
-                if (!snapshot.hasData) {
-                  return const Text("No profile found");
-                }
-                Profile profile = snapshot.data!;
-                return SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      _userInfoRow("Name", profile.name.toString(), context),
-                      _userInfoRow("Email", profile.email.toString(), context),
-                      _userInfoRow("Phone Number",
-                          profile.phoneNumber.toString(), context),
-                    ],
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 20),
-            RoundButton(
-              text: 'Delete My Account',
-              press: () => _deleteAccount(context),
-          ),
-          ],
-        ),
-      ),
-    );
-  }
 
  void _deleteAccount(BuildContext context) async {
   try {
@@ -292,20 +211,40 @@ class BodyState extends State<Body> {
     );
   }
 
-  Future<void> _showEditDialog(BuildContext context, String label,
+Future<void> _showEditDialog(BuildContext context, String label,
       String initialValue, Function(String) onConfirm) async {
-    TextEditingController controller =
-        TextEditingController(text: initialValue);
+    TextEditingController controller = TextEditingController(text: initialValue);
+    // Define a local GlobalKey for this specific dialog instance
+    final GlobalKey<FormState> _formKeyDialog = GlobalKey<FormState>();
+
     return showDialog<void>(
       context: context,
       barrierDismissible: false, // User must tap button to dismiss dialog
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Edit $label'),
-          content: TextField(
-            controller: controller,
-            autofocus: true,
-            decoration: InputDecoration(hintText: "Enter new $label"),
+          content: Form(
+            key: _formKeyDialog,  // Use the local GlobalKey here
+            child: TextFormField(
+              controller: controller,
+              autofocus: true,
+              decoration: InputDecoration(hintText: "Enter new $label"),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return '$label cannot be empty';
+                }
+                if (label == 'Name' && !RegExp(r"^[a-zA-Z\s'-]+$").hasMatch(value)) {
+                  return "Names can only contain letters";
+                  }
+                if (label == "Email" && !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                  return 'Please enter a valid email address';
+                }
+                if (label == "Phone Number" && !RegExp(r'^(\+44\s?7\d{3}|\(?07\d{3}\)?)\s?\d{3}\s?\d{3}$').hasMatch(value)) {
+                  return 'Please enter a valid phone number';
+                }
+                return null;
+              },
+            ),
           ),
           actions: <Widget>[
             TextButton(
@@ -316,30 +255,25 @@ class BodyState extends State<Body> {
             ),
             TextButton(
               child: const Text('Save'),
-              onPressed: () async {
-                String uid = FirebaseAuth
-                    .instance.currentUser!.uid; // Ensure the user is logged in
-                String fieldToUpdate = _getFieldKeyFromLabel(label);
+              onPressed: () {
+                if (_formKeyDialog.currentState!.validate()) {  // Make sure to reference the local form key
+                  String uid = FirebaseAuth.instance.currentUser!.uid; // Ensure the user is logged in
+                  String fieldToUpdate = _getFieldKeyFromLabel(label);
 
-                if (fieldToUpdate.isNotEmpty) {
-                  // Instantiate DatabaseService with the current user's UID
-                  DatabaseService dbService = DatabaseService(uid: uid);
+                  if (fieldToUpdate.isNotEmpty) {
+                    DatabaseService dbService = DatabaseService(uid: uid);
 
-                  await dbService
-                      .safeUpdateUserDataField(
-                          uid, fieldToUpdate, controller.text)
-                      .then((_) {
-                    onConfirm(
-                        controller.text); // Call onConfirm with the new value
-                    // Optionally, refresh data or provide user feedback
-                  }).catchError((error) {
-                    // Handle or log the error
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Error updating data: $error")),
-                    );
-                  });
-                  // ignore: use_build_context_synchronously
-                  Navigator.of(context).pop(); // Close the dialog
+                    dbService.safeUpdateUserDataField(uid, fieldToUpdate, controller.text)
+                        .then((_) {
+                          onConfirm(controller.text); // Call onConfirm with the new value
+                          Navigator.of(context).pop(); // Close the dialog
+                        })
+                        .catchError((error) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("Error updating data: $error")),
+                          );
+                        });
+                  }
                 }
               },
             ),
@@ -348,7 +282,8 @@ class BodyState extends State<Body> {
       },
     );
   }
-}
+
+
 
 // Helper function to map labels to field names
 String _getFieldKeyFromLabel(String label) {
@@ -361,5 +296,91 @@ String _getFieldKeyFromLabel(String label) {
       return 'phoneNumber';
     default:
       return '';
+  }
+}
+
+
+  @override
+  Widget build(BuildContext context) {
+    // Build method moved inside the state class
+    return PopScope(canPop: false,
+      child: Background(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: <Widget>[
+              Stack(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(4), // Size of the border
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors
+                          .transparent, // Ensure the Container background is transparent
+                      border: Border.all(
+                        color: greenColor
+                            .withOpacity(0.5), // Blue border with 50% opacity
+                        width: 4, // Border thickness
+                      ),
+                    ),
+                    child: _imageURL != null
+                        ? CircleAvatar(
+                            radius: 64,
+                            backgroundImage: NetworkImage(_imageURL!),
+                          )
+                        : const CircleAvatar(
+                            radius: 64.0,
+                            backgroundImage: NetworkImage(
+                                'https://t3.ftcdn.net/jpg/02/09/37/00/360_F_209370065_JLXhrc5inEmGl52SyvSPeVB23hB6IjrR.jpg'),
+                            backgroundColor: Colors.transparent,
+                          ),
+                  ),
+                  Positioned(
+                    bottom: -10,
+                    left: 80,
+                    child: IconButton(
+                        onPressed: selectImage,
+                        icon: const Icon(
+                          Icons.add_a_photo,
+                          color: yellowColor,
+                        )),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              StreamBuilder<Profile>(
+                stream:
+                    DatabaseService(uid: FirebaseAuth.instance.currentUser?.uid)
+                        .currentUserProfile,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircularProgressIndicator();
+                  }
+                  if (!snapshot.hasData) {
+                    return const Text("No profile found");
+                  }
+                  Profile profile = snapshot.data!;
+                  return SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        _userInfoRow("Name", profile.name.toString(), context),
+                        _userInfoRow("Email", profile.email.toString(), context),
+                        _userInfoRow("Phone Number",
+                            profile.phoneNumber.toString(), context),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 20),
+              RoundButton(
+                text: 'Delete My Account',
+                press: () => _deleteAccount(context),
+            ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

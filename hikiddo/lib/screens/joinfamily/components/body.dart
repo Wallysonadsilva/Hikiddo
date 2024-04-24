@@ -38,102 +38,104 @@ class BodyState extends State<Body> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    return Background(
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              "Join a family group",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 32,
+    return PopScope(canPop: false,
+      child: Background(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              const Text(
+                "Join a family group",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 32,
+                ),
               ),
-            ),
-            SizedBox(height: size.height * 0.03),
-            RoundedInputField(
-              controllers: _controller, // Corrected to match the property name
-              icon: Icons.search,
-              iconColor: Colors.grey,
-              hintText: "Search or Create New",
-              onChanged: (value) {},
-            ),
-            // Check if the suggestions list is not empty to display the instructions and the list
-            if (_suggestions.isNotEmpty)
-              Column(
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text(
-                      'Tap on a group to join, or tap "Create new: \'Group Name\'" to start a new group.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey),
+              SizedBox(height: size.height * 0.03),
+              RoundedInputField(
+                controllers: _controller, // Corrected to match the property name
+                icon: Icons.search,
+                iconColor: Colors.grey,
+                hintText: "Search or Create New",
+                onChanged: (value) {},
+              ),
+              // Check if the suggestions list is not empty to display the instructions and the list
+              if (_suggestions.isNotEmpty)
+                Column(
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text(
+                        'Tap on a group to join, or tap "Create new: \'Group Name\'" to start a new group.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.grey),
+                      ),
                     ),
-                  ),
-                  ListView.builder(
-                    shrinkWrap:
-                        true, // Necessary to embed ListView inside Column/SingleChildScrollView
-                    physics:
-                        const NeverScrollableScrollPhysics(), // Disable scroll inside scroll
-                    itemCount: _suggestions.length,
-                    itemBuilder: (context, index) {
-                      final suggestion = _suggestions[index];
-                      return Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 45),
-                        child: RoundButton(
-                          text: suggestion,
-                          color: greenColor,
-                          press: () async {
-                            if (suggestion.startsWith('Create new:')) {
-                              final groupName = suggestion
-                                  .replaceFirst('Create new: \'', '')
-                                  .replaceAll('\'', '');
-                              _tryCreateGroup(groupName);
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) {
-                                    return const MainScreen();
-                                  },
-                                ),
-                              );
-                            } else {
-                              // Retrieve the groupId based on the group name
-                              String? groupId = await _databaseService
-                                  .getFamilyGroupIdFromName(context, suggestion);
-                              if (groupId != null) {
-                                // Instead of joining the group, send a join request
-                                await _databaseService
-                                    .sendJoinRequest(groupId,
-                                        FirebaseAuth.instance.currentUser!.uid)
-                                    .then((_) {
-                                  _joinRequestDialog(context);
-                        
-                                  // Optionally, navigate back or to another relevant screen
-                                }).catchError((error) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                        content: Text(
-                                            'Failed to send join request: $error')),
-                                  );
-                                });
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content: Text('Group not found')),
+                    ListView.builder(
+                      shrinkWrap:
+                          true, // Necessary to embed ListView inside Column/SingleChildScrollView
+                      physics:
+                          const NeverScrollableScrollPhysics(), // Disable scroll inside scroll
+                      itemCount: _suggestions.length,
+                      itemBuilder: (context, index) {
+                        final suggestion = _suggestions[index];
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 45),
+                          child: RoundButton(
+                            text: suggestion,
+                            color: greenColor,
+                            press: () async {
+                              if (suggestion.startsWith('Create new:')) {
+                                final groupName = suggestion
+                                    .replaceFirst('Create new: \'', '')
+                                    .replaceAll('\'', '');
+                                _tryCreateGroup(groupName);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) {
+                                      return const MainScreen();
+                                    },
+                                  ),
                                 );
+                              } else {
+                                // Retrieve the groupId based on the group name
+                                String? groupId = await _databaseService
+                                    .getFamilyGroupIdFromName(context, suggestion);
+                                if (groupId != null) {
+                                  // Instead of joining the group, send a join request
+                                  await _databaseService
+                                      .sendJoinRequest(groupId,
+                                          FirebaseAuth.instance.currentUser!.uid)
+                                      .then((_) {
+                                    _joinRequestDialog(context);
+                          
+                                    // Optionally, navigate back or to another relevant screen
+                                  }).catchError((error) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                          content: Text(
+                                              'Failed to send join request: $error')),
+                                    );
+                                  });
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text('Group not found')),
+                                  );
+                                }
                               }
-                            }
-                          },
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            const SizedBox(height: 20),
-            SizedBox(height: size.height * 0.25),
-          ],
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              const SizedBox(height: 20),
+              SizedBox(height: size.height * 0.25),
+            ],
+          ),
         ),
       ),
     );

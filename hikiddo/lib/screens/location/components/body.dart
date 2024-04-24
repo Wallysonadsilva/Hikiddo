@@ -141,16 +141,18 @@ class _BodyState extends State<Body> {
     double initialZoom =
         _markers.isNotEmpty ? 12.0 : 10.0; // Adjust zoom level as needed
 
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        body: GoogleMap(
-          initialCameraPosition:
-              CameraPosition(target: initialPosition, zoom: initialZoom),
-          markers: _markers,
-          onMapCreated: (GoogleMapController controller) {
-            _controller.complete(controller);
-          },
+    return PopScope(canPop: false,
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: Scaffold(
+          body: GoogleMap(
+            initialCameraPosition:
+                CameraPosition(target: initialPosition, zoom: initialZoom),
+            markers: _markers,
+            onMapCreated: (GoogleMapController controller) {
+              _controller.complete(controller);
+            },
+          ),
         ),
       ),
     );

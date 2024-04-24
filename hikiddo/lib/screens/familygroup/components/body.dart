@@ -181,268 +181,270 @@ class BodyState extends State<Body> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: TopNavigationBar(showBackButton: true),
-      body: familyGroupId == null
-          ? const JoinFamilyScreen()
-          : Background(
-              child: Column(
-                children: [
-                  const SizedBox(
-                    height: 30.0,
-                  ),
-                  const Text(
-                    "Family Group",
-                    style: TextStyle(
-                        color: redColor,
-                        fontSize: 28.0,
-                        fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.start,
-                  ),
-                  Expanded(
-                    child: StreamBuilder<DocumentSnapshot>(
-                      stream: FirebaseFirestore.instance
-                          .collection('familyGroup')
-                          .doc(familyGroupId)
-                          .snapshots(),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const Center(
-                              child: CircularProgressIndicator());
-                        }
-                        if (!snapshot.hasData) {
-                          return const Center(child: Text("No data found"));
-                        }
-                        var groupData =
-                            snapshot.data?.data() as Map<String, dynamic>?;
-                        if (groupData == null) {
-                          return const Center(
-                              child: Text(
-                                  "No data found or data is not in expected format."));
-                        } else {
-                        List<dynamic> members = groupData['members'];
-                        bool isHost = FirebaseAuth.instance.currentUser?.uid ==
-                            groupData['hostId'];
-                        return ListView(
-                          children: [
-                            ListTile(
-                              title: Text(
-                                groupData['name'],
-                                style: const TextStyle(
-                                    color: greenColor,
-                                    fontSize: 28.0,
-                                    fontWeight: FontWeight.bold),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                            // Overlay the badge on top of the button
-                            ListTile(
-                              title: const Text(
-                                "Members:",
-                                style: TextStyle(
-                                    color: redColor,
-                                    fontSize: 24.0,
-                                    fontWeight: FontWeight.bold),
-                                textAlign: TextAlign.start,
-                              ),
-                              subtitle: Container(
-                                padding: const EdgeInsets.all(8.0),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                height: 300,
-                                width: double.infinity,
-                                child: SingleChildScrollView(
-                                  physics:
-                                      const AlwaysScrollableScrollPhysics(),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: members
-                                        .map((memberId) =>
-                                            FutureBuilder<DocumentSnapshot>(
-                                              future: FirebaseFirestore.instance
-                                                  .collection('users')
-                                                  .doc(memberId)
-                                                  .get(),
-                                              builder: (context, snapshot) {
-                                                if (!snapshot.hasData ||
-                                                    snapshot.data?.data() ==
-                                                        null) {
-                                                  return const Text(
-                                                      "Loading...");
-                                                }
-                                                // Since we now know snapshot.data is not null, we can safely access it
-                                                var userData = snapshot.data!
-                                                        .data()
-                                                    as Map<String, dynamic>?;
-                                                // Check if userData is null before accessing it
-                                                if (userData == null) {
-                                                  return const Text(
-                                                      "User data not found.");
-                                                }
-                                                return ListTile(
-                                                  leading: const Icon(
-                                                      Icons.person,
-                                                      color: Colors.black),
-                                                  title: Text(
-                                                    userData['name'],
-                                                    style: const TextStyle(
-                                                        color: Colors.black,
-                                                        fontSize: 20.0,
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                  ),
-                                                  trailing: isHost &&
-                                                          memberId !=
-                                                              groupData[
-                                                                  'hostId']
-                                                      ? TextButton(
-                                                          onPressed: () =>
-                                                              confirmeAndRemoveMember(
-                                                                  memberId,
-                                                                  'Are you sure you want to remove this member from the Family group?'),
-                                                          child: const Text(
-                                                              "Remove",
-                                                              style: TextStyle(
-                                                                  color:
-                                                                      redColor)),
-                                                        )
-                                                      : null,
-                                                );
-                                              },
-                                            ))
-                                        .toList(),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            if (!isHost)
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    confirmeAndRemoveMember(newMemberID,
-                                        'Are you sure you want to leave this Family group?');
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: redColor,
-                                    foregroundColor: Colors.white,
-                                    minimumSize: const Size(100, 55),
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 16),
-                                  ),
-                                  child: const Text("Leave Group"),
-                                ),
-                              )
-                            else
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(
-                                          left: 14.0, top: 8.0, bottom: 8.0),
-                                      child: ElevatedButton(
-                                        onPressed: () {
-                                          _deleteFamilyGroup(
-                                              context, familyGroupId);
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: redColor,
-                                          foregroundColor: Colors.white,
-                                          // Removed minimumSize to allow the button to fill the Expanded widget
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 16, vertical: 20),
-                                        ),
-                                        child: const Text("Delete Group"),
-                                      ),
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(
-                                          top: 8.0, bottom: 8.0, right: 23),
-                                      child: Stack(
-                                        alignment: Alignment
-                                            .centerRight, // Adjust the Stack alignment as needed
-                                        children: [
-                                          ElevatedButton(
-                                            onPressed: () =>
-                                                showJoinRequestsDialog(
-                                                    familyGroupId!),
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: greenColor,
-                                              foregroundColor: Colors.white,
-                                              // Removed minimumSize to allow the button to fill the Expanded widget
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 22,
-                                                      vertical: 20),
-                                            ),
-                                            child:
-                                                const Text("Manage Requests"),
-                                          ),
-                                          Positioned(
-                                            top:
-                                                -5, // Adjust the badge position as needed
-                                            right: 10,
-                                            child: StreamBuilder<QuerySnapshot>(
-                                              stream: FirebaseFirestore.instance
-                                                  .collection('familyGroup')
-                                                  .doc(familyGroupId)
-                                                  .collection('joinRequests')
-                                                  .where('status',
-                                                      isEqualTo: 'pending')
-                                                  .snapshots(),
-                                              builder: (BuildContext context,
-                                                  AsyncSnapshot<QuerySnapshot>
-                                                      snapshot) {
-                                                if (!snapshot.hasData) {
-                                                  return Container(); // Or some loading indicator
-                                                }
-                                                int pendingRequestsCount =
-                                                    snapshot.data!.docs.length;
-                                                return pendingRequestsCount > 0
-                                                    ? Container(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .all(6),
-                                                        decoration:
-                                                            const BoxDecoration(
-                                                          color: Colors.red,
-                                                          shape:
-                                                              BoxShape.circle,
-                                                        ),
-                                                        child: Text(
-                                                          '$pendingRequestsCount',
-                                                          style:
-                                                              const TextStyle(
-                                                                  color: Colors
-                                                                      .white,
-                                                                  fontSize: 12),
-                                                        ),
-                                                      )
-                                                    : Container(); // Return an empty container if there are no pending requests
-                                              },
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              )
-                          ],
-                        );
-                        }
-                      },
+    return PopScope(canPop: false,
+      child: Scaffold(
+        appBar: TopNavigationBar(showBackButton: true),
+        body: familyGroupId == null
+            ? const JoinFamilyScreen()
+            : Background(
+                child: Column(
+                  children: [
+                    const SizedBox(
+                      height: 30.0,
                     ),
-                  ),
-                ],
+                    const Text(
+                      "Family Group",
+                      style: TextStyle(
+                          color: redColor,
+                          fontSize: 28.0,
+                          fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.start,
+                    ),
+                    Expanded(
+                      child: StreamBuilder<DocumentSnapshot>(
+                        stream: FirebaseFirestore.instance
+                            .collection('familyGroup')
+                            .doc(familyGroupId)
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                                child: CircularProgressIndicator());
+                          }
+                          if (!snapshot.hasData) {
+                            return const Center(child: Text("No data found"));
+                          }
+                          var groupData =
+                              snapshot.data?.data() as Map<String, dynamic>?;
+                          if (groupData == null) {
+                            return const Center(
+                                child: Text(
+                                    "No data found or data is not in expected format."));
+                          } else {
+                          List<dynamic> members = groupData['members'];
+                          bool isHost = FirebaseAuth.instance.currentUser?.uid ==
+                              groupData['hostId'];
+                          return ListView(
+                            children: [
+                              ListTile(
+                                title: Text(
+                                  groupData['name'],
+                                  style: const TextStyle(
+                                      color: greenColor,
+                                      fontSize: 28.0,
+                                      fontWeight: FontWeight.bold),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                              // Overlay the badge on top of the button
+                              ListTile(
+                                title: const Text(
+                                  "Members:",
+                                  style: TextStyle(
+                                      color: redColor,
+                                      fontSize: 24.0,
+                                      fontWeight: FontWeight.bold),
+                                  textAlign: TextAlign.start,
+                                ),
+                                subtitle: Container(
+                                  padding: const EdgeInsets.all(8.0),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  height: 300,
+                                  width: double.infinity,
+                                  child: SingleChildScrollView(
+                                    physics:
+                                        const AlwaysScrollableScrollPhysics(),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: members
+                                          .map((memberId) =>
+                                              FutureBuilder<DocumentSnapshot>(
+                                                future: FirebaseFirestore.instance
+                                                    .collection('users')
+                                                    .doc(memberId)
+                                                    .get(),
+                                                builder: (context, snapshot) {
+                                                  if (!snapshot.hasData ||
+                                                      snapshot.data?.data() ==
+                                                          null) {
+                                                    return const Text(
+                                                        "Loading...");
+                                                  }
+                                                  // Since we now know snapshot.data is not null, we can safely access it
+                                                  var userData = snapshot.data!
+                                                          .data()
+                                                      as Map<String, dynamic>?;
+                                                  // Check if userData is null before accessing it
+                                                  if (userData == null) {
+                                                    return const Text(
+                                                        "User data not found.");
+                                                  }
+                                                  return ListTile(
+                                                    leading: const Icon(
+                                                        Icons.person,
+                                                        color: Colors.black),
+                                                    title: Text(
+                                                      userData['name'],
+                                                      style: const TextStyle(
+                                                          color: Colors.black,
+                                                          fontSize: 20.0,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                    trailing: isHost &&
+                                                            memberId !=
+                                                                groupData[
+                                                                    'hostId']
+                                                        ? TextButton(
+                                                            onPressed: () =>
+                                                                confirmeAndRemoveMember(
+                                                                    memberId,
+                                                                    'Are you sure you want to remove this member from the Family group?'),
+                                                            child: const Text(
+                                                                "Remove",
+                                                                style: TextStyle(
+                                                                    color:
+                                                                        redColor)),
+                                                          )
+                                                        : null,
+                                                  );
+                                                },
+                                              ))
+                                          .toList(),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              if (!isHost)
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      confirmeAndRemoveMember(newMemberID,
+                                          'Are you sure you want to leave this Family group?');
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: redColor,
+                                      foregroundColor: Colors.white,
+                                      minimumSize: const Size(100, 55),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16),
+                                    ),
+                                    child: const Text("Leave Group"),
+                                  ),
+                                )
+                              else
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: 14.0, top: 8.0, bottom: 8.0),
+                                        child: ElevatedButton(
+                                          onPressed: () {
+                                            _deleteFamilyGroup(
+                                                context, familyGroupId);
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: redColor,
+                                            foregroundColor: Colors.white,
+                                            // Removed minimumSize to allow the button to fill the Expanded widget
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 16, vertical: 20),
+                                          ),
+                                          child: const Text("Delete Group"),
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(
+                                            top: 8.0, bottom: 8.0, right: 23),
+                                        child: Stack(
+                                          alignment: Alignment
+                                              .centerRight, // Adjust the Stack alignment as needed
+                                          children: [
+                                            ElevatedButton(
+                                              onPressed: () =>
+                                                  showJoinRequestsDialog(
+                                                      familyGroupId!),
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: greenColor,
+                                                foregroundColor: Colors.white,
+                                                // Removed minimumSize to allow the button to fill the Expanded widget
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 22,
+                                                        vertical: 20),
+                                              ),
+                                              child:
+                                                  const Text("Manage Requests"),
+                                            ),
+                                            Positioned(
+                                              top:
+                                                  -5, // Adjust the badge position as needed
+                                              right: 10,
+                                              child: StreamBuilder<QuerySnapshot>(
+                                                stream: FirebaseFirestore.instance
+                                                    .collection('familyGroup')
+                                                    .doc(familyGroupId)
+                                                    .collection('joinRequests')
+                                                    .where('status',
+                                                        isEqualTo: 'pending')
+                                                    .snapshots(),
+                                                builder: (BuildContext context,
+                                                    AsyncSnapshot<QuerySnapshot>
+                                                        snapshot) {
+                                                  if (!snapshot.hasData) {
+                                                    return Container(); // Or some loading indicator
+                                                  }
+                                                  int pendingRequestsCount =
+                                                      snapshot.data!.docs.length;
+                                                  return pendingRequestsCount > 0
+                                                      ? Container(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .all(6),
+                                                          decoration:
+                                                              const BoxDecoration(
+                                                            color: Colors.red,
+                                                            shape:
+                                                                BoxShape.circle,
+                                                          ),
+                                                          child: Text(
+                                                            '$pendingRequestsCount',
+                                                            style:
+                                                                const TextStyle(
+                                                                    color: Colors
+                                                                        .white,
+                                                                    fontSize: 12),
+                                                          ),
+                                                        )
+                                                      : Container(); // Return an empty container if there are no pending requests
+                                                },
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                )
+                            ],
+                          );
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
+      ),
     );
   }
 }
