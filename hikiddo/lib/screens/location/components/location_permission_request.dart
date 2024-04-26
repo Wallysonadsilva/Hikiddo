@@ -19,5 +19,4 @@ class LocationService {
   }
 
   Stream<LocationData> get locationStream => location.onLocationChanged;
-
 }

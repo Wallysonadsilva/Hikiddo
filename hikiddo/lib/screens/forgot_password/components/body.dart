@@ -26,7 +26,8 @@ class BodyState extends State<Body> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    return PopScope(canPop: false,
+    return PopScope(
+      canPop: false,
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: greenColor,
@@ -75,34 +76,34 @@ class BodyState extends State<Body> {
     );
   }
 
-void sentResetLink() async {
-  final email = _emailController.text.trim();
-  if (email.isEmpty) {
-    showAlertDialog("Email is required");
-  } else {
-    await _authService.sendPasswordResetEmail(email, (String message) async {
-      if (mounted) {
-        await showDialog<String>(
-          context: context,
-          builder: (BuildContext context) => AlertDialog(
-            title: const Text("Password Reset"),
-            content: Text(message),
-            actions: <Widget>[
-              TextButton(
-                child: const Text("OK"),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-            ],
-          ),
-        );
-        // Perform navigation after the dialog is dismissed
-        // ignore: use_build_context_synchronously
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const LoginScreen()));
-      }
-    });
+  void sentResetLink() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      showAlertDialog("Email is required");
+    } else {
+      await _authService.sendPasswordResetEmail(email, (String message) async {
+        if (mounted) {
+          await showDialog<String>(
+            context: context,
+            builder: (BuildContext context) => AlertDialog(
+              title: const Text("Password Reset"),
+              content: Text(message),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text("OK"),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            ),
+          );
+          // Perform navigation after the dialog is dismissed
+          // ignore: use_build_context_synchronously
+          Navigator.pushReplacement(context,
+              MaterialPageRoute(builder: (context) => const LoginScreen()));
+        }
+      });
+    }
   }
-}
-
 
   void showAlertDialog(String message) {
     showDialog(

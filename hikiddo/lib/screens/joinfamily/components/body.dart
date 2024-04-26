@@ -38,7 +38,8 @@ class BodyState extends State<Body> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    return PopScope(canPop: false,
+    return PopScope(
+      canPop: false,
       child: Background(
         child: SingleChildScrollView(
           child: Column(
@@ -53,7 +54,8 @@ class BodyState extends State<Body> {
               ),
               SizedBox(height: size.height * 0.03),
               RoundedInputField(
-                controllers: _controller, // Corrected to match the property name
+                controllers:
+                    _controller, // Corrected to match the property name
                 icon: Icons.search,
                 iconColor: Colors.grey,
                 hintText: "Search or Create New",
@@ -101,15 +103,18 @@ class BodyState extends State<Body> {
                               } else {
                                 // Retrieve the groupId based on the group name
                                 String? groupId = await _databaseService
-                                    .getFamilyGroupIdFromName(context, suggestion);
+                                    .getFamilyGroupIdFromName(
+                                        context, suggestion);
                                 if (groupId != null) {
                                   // Instead of joining the group, send a join request
                                   await _databaseService
-                                      .sendJoinRequest(groupId,
-                                          FirebaseAuth.instance.currentUser!.uid)
+                                      .sendJoinRequest(
+                                          groupId,
+                                          FirebaseAuth
+                                              .instance.currentUser!.uid)
                                       .then((_) {
                                     _joinRequestDialog(context);
-                          
+
                                     // Optionally, navigate back or to another relevant screen
                                   }).catchError((error) {
                                     ScaffoldMessenger.of(context).showSnackBar(

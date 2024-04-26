@@ -177,6 +177,7 @@ Future<List<String>> searchGroups(String query) async {
         return null;
       }
     } catch (e) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error retrieving family group host ID: $e")));
       return null;
     }

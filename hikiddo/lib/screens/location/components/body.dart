@@ -23,7 +23,7 @@ class _BodyState extends State<Body> {
   final bool _initialFitDone = false;
   late BitmapDescriptor customIcon;
 
- @override
+  @override
   void initState() {
     super.initState();
     _requestPermission();
@@ -33,8 +33,34 @@ class _BodyState extends State<Body> {
 
   @override
   void dispose() {
-    _locationUpdatesSubscription?.cancel(); // Cancel the subscription when the widget is disposed
+    _locationUpdatesSubscription?.cancel();
     super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    LatLng initialPosition = _markers.isNotEmpty
+        ? _markers.first.position
+        : const LatLng(51.509865, -0.118092); // Default position
+    double initialZoom =
+        _markers.isNotEmpty ? 12.0 : 10.0; // Adjust zoom level as needed
+
+    return PopScope(
+      canPop: false,
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: Scaffold(
+          body: GoogleMap(
+            initialCameraPosition:
+                CameraPosition(target: initialPosition, zoom: initialZoom),
+            markers: _markers,
+            onMapCreated: (GoogleMapController controller) {
+              _controller.complete(controller);
+            },
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _setupFamilyGroupMarkers() async {
@@ -42,15 +68,16 @@ class _BodyState extends State<Body> {
     if (familyGroupId != null) {
       _listenForLocationUpdates(familyGroupId);
     } else {
-      if(!mounted) return;
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("You have not joined a Family Group yet")),
-    );
+        const SnackBar(content: Text("You have not joined a Family Group yet")),
+      );
     }
   }
 
   void _listenForLocationUpdates(String familyGroupId) {
-    _locationUpdatesSubscription?.cancel(); // Cancel any existing subscription first
+    _locationUpdatesSubscription
+        ?.cancel(); // Cancel any existing subscription first
     _locationUpdatesSubscription = _databaseService
         .getFamilyGroupUserLocationsStream(familyGroupId)
         .listen(
@@ -58,40 +85,39 @@ class _BodyState extends State<Body> {
         await _updateMarkers(locations);
       },
       onError: (error) {
-        if(!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Error listening for location updates")),
-    );
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Error listening for location updates")),
+        );
       },
     );
   }
 
+  Future<void> _updateMarkers(List<UserLocation> locations) async {
+    Set<Marker> newMarkers = {};
+    for (var userLocation in locations) {
+      // Use a default image URL if none is found
+      String profileImageUrl = userLocation.profileImageUrl;
+      final BitmapDescriptor icon =
+          await getMarkerIconFromUrl(profileImageUrl, const Size(150, 150));
 
- Future<void> _updateMarkers(List<UserLocation> locations) async {
-  Set<Marker> newMarkers = {};
-  for (var userLocation in locations) {
-    // Use a default image URL if none is found
-    String profileImageUrl = userLocation.profileImageUrl;
-    final BitmapDescriptor icon = await getMarkerIconFromUrl(profileImageUrl, const Size(150, 150));
+      final marker = Marker(
+        markerId: MarkerId(userLocation.userId),
+        position: userLocation.latLng,
+        icon: icon,
+        infoWindow: InfoWindow(title: userLocation.name),
+        onTap: _fitMarkers,
+      );
 
-    final marker = Marker(
-      markerId: MarkerId(userLocation.userId),
-      position: userLocation.latLng,
-      icon: icon,
-      infoWindow: InfoWindow(title: userLocation.name),
-      onTap: _fitMarkers,
-    );
+      newMarkers.add(marker);
+    }
 
-    newMarkers.add(marker);
+    if (mounted) {
+      setState(() {
+        _markers = newMarkers;
+      });
+    }
   }
-
-  if (mounted) {
-    setState(() {
-      _markers = newMarkers;
-    });
-  }
-}
-
 
   Future<void> _fitMarkers() async {
     if (_markers.isNotEmpty && _controller.isCompleted && !_initialFitDone) {
@@ -131,30 +157,5 @@ class _BodyState extends State<Body> {
     location.onLocationChanged.listen((LocationData currentLocation) {
       _databaseService.updateUserLocation(currentLocation);
     });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    LatLng initialPosition = _markers.isNotEmpty
-        ? _markers.first.position
-        : const LatLng(51.509865, -0.118092); // Default position
-    double initialZoom =
-        _markers.isNotEmpty ? 12.0 : 10.0; // Adjust zoom level as needed
-
-    return PopScope(canPop: false,
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: Scaffold(
-          body: GoogleMap(
-            initialCameraPosition:
-                CameraPosition(target: initialPosition, zoom: initialZoom),
-            markers: _markers,
-            onMapCreated: (GoogleMapController controller) {
-              _controller.complete(controller);
-            },
-          ),
-        ),
-      ),
-    );
   }
 }

@@ -15,7 +15,6 @@ class MainScreen extends StatefulWidget {
 }
 
 class MainScreenState extends State<MainScreen> {
-
   int currentIndex = 0;
   final AuthService _auth = AuthService();
 
@@ -27,7 +26,8 @@ class MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(canPop: false,
+    return PopScope(
+      canPop: false,
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: greenColor,
@@ -49,8 +49,7 @@ class MainScreenState extends State<MainScreen> {
                   // ignore: use_build_context_synchronously
                   context,
                   MaterialPageRoute(
-                      builder: (context) =>
-                          const WelcomeScreen()),
+                      builder: (context) => const WelcomeScreen()),
                 );
               },
             )
@@ -60,7 +59,7 @@ class MainScreenState extends State<MainScreen> {
         drawer: const SideBar(),
         bottomNavigationBar: BottomNavigationBarComp(
           currentIndex: currentIndex,
-          onTap: (index){
+          onTap: (index) {
             setState(() {
               currentIndex = index;
             });

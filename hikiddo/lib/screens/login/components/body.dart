@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:hikiddo/components/rounded_button.dart';
 import 'package:hikiddo/constants.dart';
 import 'package:hikiddo/loading.dart';
@@ -34,7 +33,8 @@ class _BodyState extends State<Body> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    return PopScope( canPop: false,
+    return PopScope(
+      canPop: false,
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         body: loading
@@ -47,8 +47,8 @@ class _BodyState extends State<Body> {
                         bottom: MediaQuery.of(context).viewInsets.bottom),
                     child: Column(
                       // Use Stack for overlaying widgets
-                      mainAxisAlignment:
-                          MainAxisAlignment.center, // Center content in the Stack
+                      mainAxisAlignment: MainAxisAlignment
+                          .center, // Center content in the Stack
                       children: <Widget>[
                         SizedBox(height: size.height * 0.0),
                         Image.asset(
@@ -79,7 +79,6 @@ class _BodyState extends State<Body> {
                             setState(() => password = value);
                           },
                         ),
-        
                         GestureDetector(
                             onTap: () {
                               // navigate to new page
@@ -98,14 +97,14 @@ class _BodyState extends State<Body> {
                                   decoration: TextDecoration.underline,
                                   decorationColor: Colors.blue),
                             )),
-                            const SizedBox(height: 20),
+                        const SizedBox(height: 20),
                         RoundButton(
                           text: "LOGIN",
                           press: () async {
                             if (_formKey.currentState!.validate()) {
                               setState(() => loading = true);
-                              dynamic result =
-                                  await _auth.userSignIn(context, email, password);
+                              dynamic result = await _auth.userSignIn(
+                                  context, email, password);
                               if (result != null) {
                                 // Navigate to the home screen
                                 Navigator.pushReplacement(

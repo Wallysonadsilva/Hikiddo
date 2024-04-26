@@ -36,7 +36,8 @@ class _BodyState extends State<Body> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    return PopScope(canPop: false,
+    return PopScope(
+      canPop: false,
       child: loading
           ? const EmailVerifyPage()
           : Background(
@@ -108,24 +109,24 @@ class _BodyState extends State<Body> {
                       },
                     ),
                     RoundPasswordField(
-                        iconColor: redColor,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter a password';
-                          } else if (value.length < 6) {
-                            return 'Password must be at least 6 characters';
-                          } else if (!RegExp(r'^(?=.*[A-Z]).+$')
-                              .hasMatch(value)) {
-                            return 'Password must include at least  one uppercase letter';
-                          } else if (!RegExp(r'^(?=.*\d).+$').hasMatch(value)) {
-                            return 'Password must include at least one number';
-                          }
-                          return null;
-                        },
-                        onchanged: (value) {
-                          setState(() => password = value);
-                        },
-                        ),
+                      iconColor: redColor,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a password';
+                        } else if (value.length < 6) {
+                          return 'Password must be at least 6 characters';
+                        } else if (!RegExp(r'^(?=.*[A-Z]).+$')
+                            .hasMatch(value)) {
+                          return 'Password must include at least  one uppercase letter';
+                        } else if (!RegExp(r'^(?=.*\d).+$').hasMatch(value)) {
+                          return 'Password must include at least one number';
+                        }
+                        return null;
+                      },
+                      onchanged: (value) {
+                        setState(() => password = value);
+                      },
+                    ),
                     SizedBox(height: size.height * 0.01),
                     RoundButton(
                       color: redColor,

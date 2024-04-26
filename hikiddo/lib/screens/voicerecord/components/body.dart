@@ -32,21 +32,168 @@ class BodyState extends State<Body> {
   String? hostId;
   String? familyGroupId;
 
- @override
-void initState() {
-  super.initState();
-  _initRecorder();
-  FirebaseAuth.instance.authStateChanges().first.then((user) {
-    if (user != null) {
-      _databaseService.getFamilyGroupId(context).then((familyGroupId) {
-        if (familyGroupId != null) {
-          _fetchAndStoreHostId(familyGroupId);
-          _initLoadRecordings();
-        }
-      });
-    }
-  });
-}
+  @override
+  void initState() {
+    super.initState();
+    _initRecorder();
+    FirebaseAuth.instance.authStateChanges().first.then((user) {
+      if (user != null) {
+        _databaseService.getFamilyGroupId(context).then((familyGroupId) {
+          if (familyGroupId != null) {
+            _fetchAndStoreHostId(familyGroupId);
+            _initLoadRecordings();
+          }
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _soundRecorder.closeAudioSession();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+        appBar: TopNavigationBar(showBackButton: true),
+        body: familyGroupId == null
+            ? const JoinFamilyScreen()
+            : Background(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Text(
+                        'Storyteller',
+                        style: TextStyle(
+                            color: redColor,
+                            fontSize: 28.0,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: ListView.builder(
+                          itemCount: recordings.length,
+                          itemBuilder: (context, index) {
+                            final recording = recordings[index];
+                            final String currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
+                            final bool canEdit = recording.userId == currentUserId || hostId == currentUserId;
+                            String formattedDate = DateFormat(
+                                    'dd-MM-yyyy – kk:mm')
+                                .format(recording.date
+                                    .toLocal()); // Adjust based on your date type
+
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 8.0, horizontal: 16.0),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "Date: $formattedDate",
+                                          style: const TextStyle(
+                                              color: orangeColor,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        Row(
+                                          children: [
+                                            RichText(
+                                              text: TextSpan(
+                                                children: [
+                                                  const TextSpan(
+                                                    text: "Title: ",
+                                                    style: TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight
+                                                          .bold, // Make "Title:" bold
+                                                      color: Colors
+                                                          .black, // Specify the color for the text
+                                                    ),
+                                                  ),
+                                                  TextSpan(
+                                                    text: recording.title,
+                                                    style: const TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight
+                                                          .normal, // Keep the recording title in normal weight
+                                                      color:
+                                                          greenColor, // Specify the color for the text
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            if(canEdit)
+                                              TextButton.icon(
+                                                onPressed: () => _editTitleDialog(recordings[index]),
+                                                icon: const Icon(Icons.edit_note,
+                                                color: Colors.grey),
+                                                label: const Text(""),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(
+                                      _currentlyPlayingUrl ==
+                                              recordings[index].fileUrl
+                                          ? Icons.stop
+                                          : Icons.play_arrow,
+                                    ),
+                                    onPressed: () => _togglePlayStop(
+                                        recordings[index].fileUrl),
+                                  ),
+                                  if (canEdit)
+                                    IconButton(
+                                        onPressed: () =>
+                                            _confirmDeleteRecording(
+                                                recording.id),
+                                        icon: const Icon(
+                                          Icons.delete,
+                                          color: redColor,
+                                        ))
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+        floatingActionButton:  familyGroupId != null ? FloatingActionButton(
+          backgroundColor: Colors.white,
+          onPressed: _toggleRecording,
+          child: Icon(
+            isRecording ? Icons.stop : Icons.mic,
+            color: Colors.red,
+          ),
+        ) : null,
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      ),
+    );
+  }
 
   Future<void> _initRecorder() async {
     final permissionStatus = await Permission.microphone.request();
@@ -55,12 +202,6 @@ void initState() {
       // Consider showing a dialog or a snackbar to inform the user.
     }
     await _soundRecorder.openAudioSession();
-  }
-
-  @override
-  void dispose() {
-    _soundRecorder.closeAudioSession();
-    super.dispose();
   }
 
   Future<void> _toggleRecording() async {
@@ -121,7 +262,8 @@ void initState() {
     familyGroupId = await _databaseService.getFamilyGroupId(context);
     if (familyGroupId != null) {
       try {
-        await _loadRecordings(familyGroupId!); // Pass the group ID to the method
+        await _loadRecordings(
+            familyGroupId!); // Pass the group ID to the method
       } catch (e) {
         print("Failed to load recordings: $e");
         // Consider showing an error message to the user
@@ -195,7 +337,8 @@ void initState() {
     try {
       await _mediaDataServices.updateRecordingTitle(recordingId, newTitle);
       setState(() {
-        // Update the local list of recordings if necessary, or reload them from Firestore
+        var recording = recordings.firstWhere((rec) => rec.id == recordingId);
+        recording.title = newTitle;
       });
     } catch (e) {
       // Handle errors, possibly show a snackbar with the error message
@@ -231,14 +374,15 @@ void initState() {
     }
   }
 
-Future<void> _fetchAndStoreHostId(String familyGroupId) async {
-  String? id = await _databaseService.getFamilyGroupHostId(context, familyGroupId);
-  if (mounted) {
-    setState(() {
-      hostId = id;
-    });
+  Future<void> _fetchAndStoreHostId(String familyGroupId) async {
+    String? id =
+        await _databaseService.getFamilyGroupHostId(context, familyGroupId);
+    if (mounted) {
+      setState(() {
+        hostId = id;
+      });
+    }
   }
-}
 
   Future<void> _deleteRecording(String recordingId) async {
     try {
@@ -254,131 +398,5 @@ Future<void> _fetchAndStoreHostId(String familyGroupId) async {
       print('Error deleting recording: $e');
       // Show an error message
     }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return PopScope(canPop: false,
-      child: Scaffold(
-        appBar: TopNavigationBar(showBackButton: true),
-        body: familyGroupId == null ? const JoinFamilyScreen() : Background(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text(
-                  'Storyteller',
-                  style: TextStyle(
-                      color: redColor,
-                      fontSize: 28.0,
-                      fontWeight: FontWeight.bold),
-                ),
-              ),
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(8.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: ListView.builder(
-                    itemCount: recordings.length,
-                    itemBuilder: (context, index) {
-                      final recording = recordings[index];
-                      final String currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
-                      final bool canDelete = recording.userId == currentUserId || hostId == currentUserId;
-                      String formattedDate = DateFormat('dd-MM-yyyy – kk:mm')
-                          .format(recording.date.toLocal()); // Adjust based on your date type
-      
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 8.0, horizontal: 16.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "Date: $formattedDate",
-                                    style: const TextStyle(
-                                        color: orangeColor,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  Row(
-                                    children: [
-                                      RichText(
-                                        text: TextSpan(
-                                          children: [
-                                            const TextSpan(
-                                              text: "Title: ",
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight
-                                                    .bold, // Make "Title:" bold
-                                                color: Colors
-                                                    .black, // Specify the color for the text
-                                              ),
-                                            ),
-                                            TextSpan(
-                                              text: recording.title,
-                                              style: const TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight
-                                                    .normal, // Keep the recording title in normal weight
-                                                color:
-                                                    greenColor, // Specify the color for the text
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      TextButton.icon(
-                                        onPressed: () =>
-                                            _editTitleDialog(recordings[index]),
-                                        icon: const Icon(Icons.edit_note,
-                                            color: Colors.grey),
-                                        label: const Text(""),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                            IconButton(
-                              icon: Icon(
-                                _currentlyPlayingUrl == recordings[index].fileUrl
-                                    ? Icons.stop
-                                    : Icons.play_arrow,
-                              ),
-                              onPressed: () =>
-                                  _togglePlayStop(recordings[index].fileUrl),
-                            ),
-                            if(canDelete)
-                              IconButton(onPressed: () => _confirmDeleteRecording(recording.id), icon: const Icon(Icons.delete, color: redColor,))
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        floatingActionButton: FloatingActionButton(
-          backgroundColor: Colors.white,
-          onPressed: _toggleRecording,
-          child: Icon(
-            isRecording ? Icons.stop : Icons.mic,
-            color: Colors.red,
-          ),
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      ),
-    );
   }
 }
