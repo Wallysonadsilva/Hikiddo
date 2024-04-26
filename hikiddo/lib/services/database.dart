@@ -147,6 +147,7 @@ Future<List<String>> searchGroups(String query) async {
         return null;
       }
     } catch (e) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error retrieving group ID: $e")));
       return null;
     }
@@ -161,6 +162,7 @@ Future<List<String>> searchGroups(String query) async {
       Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
       return userData['familyGroupId'];
     } catch (e) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error fetching family group ID: $e")));
       return null;
     }

@@ -82,7 +82,7 @@ class BodyState extends State<Body> {
                       itemBuilder: (context, index) {
                         final suggestion = _suggestions[index];
                         return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 45),
+                          padding: const EdgeInsets.symmetric(horizontal: 45, vertical: 8),
                           child: RoundButton(
                             text: suggestion,
                             color: greenColor,
@@ -91,7 +91,7 @@ class BodyState extends State<Body> {
                                 final groupName = suggestion
                                     .replaceFirst('Create new: \'', '')
                                     .replaceAll('\'', '');
-                                _tryCreateGroup(groupName);
+                                createGroup(groupName);
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -146,13 +146,12 @@ class BodyState extends State<Body> {
     );
   }
 
-  void _tryCreateGroup(String groupName) async {
+  void createGroup(String groupName) async {
     final result = await _databaseService.createGroup(groupName);
     if (result.success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(result.message)),
       );
-      // Optionally, navigate to the new group's page or refresh the group list
     } else {
       // Show alert dialog on failure
       showDialog(

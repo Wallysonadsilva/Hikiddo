@@ -170,8 +170,9 @@ class BodyState extends State<Body> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Profile picture updated successfully")),
         );
-        if (!mounted)
+        if (!mounted) {
           return; // Check again as `loadUserProfilePic` might also be async
+        }
         loadUserProfilePic();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -201,7 +202,7 @@ class BodyState extends State<Body> {
 
       if (uid == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("No user logged in.")),
+          const SnackBar(content: Text("No user logged in.")),
         );
         return;
       }
@@ -225,8 +226,9 @@ class BodyState extends State<Body> {
       // Delete user account
       await user!.delete();
 
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Account deleted successfully")),
+        const SnackBar(content: Text("Account deleted successfully")),
       );
 
       // Optionally, navigate the user away to a "login" or "welcome" screen
@@ -236,9 +238,9 @@ class BodyState extends State<Body> {
         MaterialPageRoute(builder: (context) => const WelcomeScreen()),
       );
     } catch (e) {
-      print("Error deleting account: $e");
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to delete account")),
+        const SnackBar(content: Text("Failed to delete account")),
       );
     }
   }
@@ -300,7 +302,7 @@ class BodyState extends State<Body> {
     TextEditingController controller =
         TextEditingController(text: initialValue);
     // Define a local GlobalKey for this specific dialog instance
-    final GlobalKey<FormState> _formKeyDialog = GlobalKey<FormState>();
+    final GlobalKey<FormState> formKeyDialog = GlobalKey<FormState>();
 
     return showDialog<void>(
       context: context,
@@ -309,7 +311,7 @@ class BodyState extends State<Body> {
         return AlertDialog(
           title: Text('Edit $label'),
           content: Form(
-            key: _formKeyDialog, // Use the local GlobalKey here
+            key: formKeyDialog, // Use the local GlobalKey here
             child: TextFormField(
               controller: controller,
               autofocus: true,
@@ -346,7 +348,7 @@ class BodyState extends State<Body> {
             TextButton(
               child: const Text('Save'),
               onPressed: () {
-                if (_formKeyDialog.currentState!.validate()) {
+                if (formKeyDialog.currentState!.validate()) {
                   // Make sure to reference the local form key
                   String uid = FirebaseAuth.instance.currentUser!
                       .uid; // Ensure the user is logged in

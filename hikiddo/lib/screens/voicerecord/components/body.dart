@@ -217,6 +217,7 @@ class BodyState extends State<Body> {
         // Assuming you have a title for your recording and a group ID
         String title = "Add Title";
         String? familyGroupId = await _databaseService
+            // ignore: use_build_context_synchronously
             .getFamilyGroupId(context); // You need to define how to obtain this
 
         // Save the recording to Firebase
@@ -280,8 +281,8 @@ class BodyState extends State<Body> {
   }
 
   Future<void> _editTitleDialog(VoiceRecording recording) async {
-    TextEditingController _titleController = TextEditingController();
-    final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+    TextEditingController titleController = TextEditingController();
+    final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
     return showDialog<void>(
       context: context,
@@ -293,9 +294,9 @@ class BodyState extends State<Body> {
             child: ListBody(
               children: <Widget>[
                 Form(
-                  key: _formKey,
+                  key: formKey,
                   child: TextFormField(
-                    controller: _titleController,
+                    controller: titleController,
                     decoration: const InputDecoration(
                       hintText: "Enter new title",
                     ),
@@ -321,8 +322,8 @@ class BodyState extends State<Body> {
             TextButton(
               child: const Text('Save'),
               onPressed: () {
-                if (_formKey.currentState!.validate()) {
-                  _saveNewTitle(recording.id, _titleController.text);
+                if (formKey.currentState!.validate()) {
+                  _saveNewTitle(recording.id, titleController.text);
                   Navigator.of(context).pop();
                 }
               },
@@ -396,7 +397,6 @@ class BodyState extends State<Body> {
       });
     } catch (e) {
       print('Error deleting recording: $e');
-      // Show an error message
     }
   }
 }

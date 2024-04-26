@@ -64,12 +64,10 @@ Future<User?> registerUser(BuildContext context, String email, String password, 
 Future<void> sendVerificationEmail(User user, BuildContext context) async {
   try {
     await user.sendEmailVerification();
-    print("Verification email sent to ${user.email}");  // Debug: Check if this line executes
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Verification email has been sent to ${user.email}. Please verify to continue.')),
     );
   } catch (e) {
-    print("Failed to send verification email: ${e}");  // Debug: Log any errors
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Failed to send verification email: ${e.toString()}')),
     );

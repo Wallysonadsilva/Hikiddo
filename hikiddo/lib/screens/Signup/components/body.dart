@@ -137,6 +137,7 @@ class _BodyState extends State<Body> {
                           User? user = await _auth.registerUser(
                               context, email, password, name);
                           if (user != null) {
+                            // ignore: use_build_context_synchronously
                             await _auth.sendVerificationEmail(user, context);
                             Timer.periodic(const Duration(seconds: 5),
                                 (timer) async {
@@ -144,6 +145,7 @@ class _BodyState extends State<Body> {
                                 timer.cancel();
                                 setState(() => loading = false);
                                 Navigator.pushReplacement(
+                                  // ignore: use_build_context_synchronously
                                   context,
                                   MaterialPageRoute(
                                       builder: (context) =>

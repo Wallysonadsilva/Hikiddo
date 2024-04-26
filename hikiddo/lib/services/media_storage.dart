@@ -97,6 +97,7 @@ Future<String> uploadMemoryBoardMedia(Uint8List fileBytes, String fileName, Stri
         .get();
 
     return querySnapshot.docs
+        // ignore: unnecessary_cast
         .map((doc) => VoiceRecording.fromFirestore(doc.data() as Map<String, dynamic>, doc.id))
         .toList();
   }

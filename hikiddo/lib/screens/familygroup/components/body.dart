@@ -341,7 +341,7 @@ class BodyState extends State<Body> {
                     Map<String, dynamic> userData = userSnapshot.data!.data() as Map<String, dynamic>;
                     String userName = userData['name'] ?? 'Unknown User';
                     return ListTile(
-                      title: Text('$userName'),
+                      title: Text(userName),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [

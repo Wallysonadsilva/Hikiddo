@@ -67,8 +67,9 @@ class BodyState extends State<Body> {
                               .doc(userId)
                               .snapshots(),
                           builder: (context, snapshot) {
-                            if (!snapshot.hasData)
+                            if (!snapshot.hasData) {
                               return const SizedBox.shrink();
+                            }
                             var userDoc =
                                 snapshot.data?.data() as Map<String, dynamic>?;
                             int points = userDoc?['points'] ?? 0;
@@ -129,8 +130,9 @@ class BodyState extends State<Body> {
                             .doc(widget.familyGroupId)
                             .snapshots(),
                         builder: (context, snapshot) {
-                          if (!snapshot.hasData)
+                          if (!snapshot.hasData) {
                             return const Text("Loading reward...");
+                          }
                           var data =
                               snapshot.data!.data() as Map<String, dynamic>?;
                           String weeklyRewardTitle =
