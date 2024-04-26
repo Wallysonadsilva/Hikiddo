@@ -219,8 +219,7 @@ class BodyState extends State<Body> {
 
   Future<void> _fetchAndUpdateMedia() async {
     if (familyGroupId != null) {
-      var mediaItems =
-          await _mediaDataServices.fetchMemoryBoardMedia(familyGroupId!);
+      var mediaItems = await _mediaDataServices.fetchMemoryBoardMedia(familyGroupId!);
       setState(() {
         _mediaItems = mediaItems;
       });

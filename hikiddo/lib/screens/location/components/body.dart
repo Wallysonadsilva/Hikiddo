@@ -123,7 +123,7 @@ class _BodyState extends State<Body> {
     if (_markers.isNotEmpty && _controller.isCompleted && !_initialFitDone) {
       var controller = await _controller.future;
       var bounds = _getLatLngBounds(_markers);
-      var cameraUpdate = CameraUpdate.newLatLngBounds(bounds, 50);
+      var cameraUpdate = CameraUpdate.newLatLngBounds(bounds, 100);
       controller.animateCamera(cameraUpdate);
       //_initialFitDone = true; // Enable this to prevent future auto-zooming
     }
