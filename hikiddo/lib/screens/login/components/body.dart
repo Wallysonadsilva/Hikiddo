@@ -25,7 +25,7 @@ class _BodyState extends State<Body> {
   final _formKey = GlobalKey<FormState>();
   bool loading = false;
 
-  //text field state
+  // Text field state
   String email = '';
   String password = '';
   String error = '';
@@ -46,9 +46,7 @@ class _BodyState extends State<Body> {
                     padding: EdgeInsets.only(
                         bottom: MediaQuery.of(context).viewInsets.bottom),
                     child: Column(
-                      // Use Stack for overlaying widgets
-                      mainAxisAlignment: MainAxisAlignment
-                          .center, // Center content in the Stack
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
                         SizedBox(height: size.height * 0.0),
                         Image.asset(
@@ -114,8 +112,7 @@ class _BodyState extends State<Body> {
                                       builder: (context) => const MainScreen()),
                                 );
                               } else {
-                                setState(() => error =
-                                    'Could not sign in with those credentials');
+                                setState(() => error = 'Could not sign in with those credentials');
                                 setState(() => loading = false);
                               }
                             }

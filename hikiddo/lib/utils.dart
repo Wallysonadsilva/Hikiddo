@@ -11,6 +11,6 @@ Future<Uint8List> pickUpImage(ImageSource source, BuildContext context) async {
     if(context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar( const SnackBar(content: Text("No image selected")),);
     }
-    return Uint8List(0); // Return an empty Uint8List or handle the absence of an image accordingly
+    return Uint8List(0);
   }
 }

@@ -9,7 +9,7 @@ class Wrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    //return either homepage or welcome page(for login or sign up)
+    // Return either Welcome page or Home Page base on user authetication
     final user = Provider.of<UserModel?>(context);
     if (user == null){
       return const WelcomeScreen();

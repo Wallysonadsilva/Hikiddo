@@ -150,10 +150,9 @@ class BodyState extends State<Body> {
 
     setState(() {
       _image = img;
-      _isUploading = true; // Begin the upload process
+      _isUploading = true;
     });
 
-    // Ensure you check for 'mounted' state again if there's another async operation and you need to call setState afterwards.
     saveProfilePic();
   }
 
@@ -162,34 +161,30 @@ class BodyState extends State<Body> {
       return; // Do nothing if there's no image
     }
     try {
-      String resp = await MediaDataServices().savaData(
-          file:
-              _image!); // Assuming a typo in 'savaData' corrected to 'saveData'
-      if (!mounted) return; // Check if the widget is still mounted
+      String resp = await MediaDataServices().savaData(file:_image!);
+      if (!mounted) return;
       if (resp == "success") {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Profile picture updated successfully")),
         );
         if (!mounted) {
-          return; // Check again as `loadUserProfilePic` might also be async
+          return;
         }
         loadUserProfilePic();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Failed to update profile picture")),
         );
-        // Handle failure, inform the user (considering the widget is still mounted here)
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Error during image upload")),
       );
-      // Handle error, inform the user (considering the widget is still mounted here)
+
     } finally {
       if (mounted) {
-        // Ensure widget is still in the tree before calling setState
         setState(() {
-          _isUploading = false; // Reset upload state
+          _isUploading = false;
         });
       }
     }
@@ -231,7 +226,6 @@ class BodyState extends State<Body> {
         const SnackBar(content: Text("Account deleted successfully")),
       );
 
-      // Optionally, navigate the user away to a "login" or "welcome" screen
       Navigator.pushReplacement(
         // ignore: use_build_context_synchronously
         context,
@@ -250,7 +244,7 @@ class BodyState extends State<Body> {
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Container(
         padding:
-            const EdgeInsets.all(8.0), // Add some padding inside the container
+            const EdgeInsets.all(8.0),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
@@ -284,10 +278,7 @@ class BodyState extends State<Body> {
                 context,
                 label,
                 value,
-                (newValue) {
-                  // Handle the new value here
-                  // _updateUserInfo(label, newValue);
-                },
+                (newValue) {},
               ),
               child: const Icon(Icons.edit, color: orangeColor),
             ),
@@ -299,19 +290,18 @@ class BodyState extends State<Body> {
 
   Future<void> _showEditDialog(BuildContext context, String label,
       String initialValue, Function(String) onConfirm) async {
-    TextEditingController controller =
-        TextEditingController(text: initialValue);
+    TextEditingController controller = TextEditingController(text: initialValue);
     // Define a local GlobalKey for this specific dialog instance
     final GlobalKey<FormState> formKeyDialog = GlobalKey<FormState>();
 
     return showDialog<void>(
       context: context,
-      barrierDismissible: false, // User must tap button to dismiss dialog
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Edit $label'),
           content: Form(
-            key: formKeyDialog, // Use the local GlobalKey here
+            key: formKeyDialog,
             child: TextFormField(
               controller: controller,
               autofocus: true,
@@ -349,9 +339,7 @@ class BodyState extends State<Body> {
               child: const Text('Save'),
               onPressed: () {
                 if (formKeyDialog.currentState!.validate()) {
-                  // Make sure to reference the local form key
-                  String uid = FirebaseAuth.instance.currentUser!
-                      .uid; // Ensure the user is logged in
+                  String uid = FirebaseAuth.instance.currentUser!.uid;
                   String fieldToUpdate = _getFieldKeyFromLabel(label);
 
                   if (fieldToUpdate.isNotEmpty) {
@@ -362,8 +350,8 @@ class BodyState extends State<Body> {
                             uid, fieldToUpdate, controller.text)
                         .then((_) {
                       onConfirm(
-                          controller.text); // Call onConfirm with the new value
-                      Navigator.of(context).pop(); // Close the dialog
+                          controller.text);
+                      Navigator.of(context).pop();
                     }).catchError((error) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text("Error updating data: $error")),
@@ -379,7 +367,7 @@ class BodyState extends State<Body> {
     );
   }
 
-// Helper function to map labels to field names
+// Function to map labels to field names
   String _getFieldKeyFromLabel(String label) {
     switch (label) {
       case 'Name':

@@ -36,7 +36,7 @@ class RoundPasswordFieldState extends State<RoundPasswordField> {
           ),
           suffixIcon: IconButton(
             icon: Icon(
-              // Change the icon dynamically based on whether text is obscured
+              // Change the icon based on whether text is obscured
               obscureText ? Icons.visibility : Icons.visibility_off,
               color: widget.iconColor,
             ),

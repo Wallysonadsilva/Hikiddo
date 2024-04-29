@@ -75,9 +75,9 @@ class BodyState extends State<Body> {
                     ),
                     ListView.builder(
                       shrinkWrap:
-                          true, // Necessary to embed ListView inside Column/SingleChildScrollView
+                          true,
                       physics:
-                          const NeverScrollableScrollPhysics(), // Disable scroll inside scroll
+                          const NeverScrollableScrollPhysics(),
                       itemCount: _suggestions.length,
                       itemBuilder: (context, index) {
                         final suggestion = _suggestions[index];
@@ -153,7 +153,6 @@ class BodyState extends State<Body> {
         SnackBar(content: Text(result.message)),
       );
     } else {
-      // Show alert dialog on failure
       showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -164,7 +163,7 @@ class BodyState extends State<Body> {
               TextButton(
                 child: const Text('OK'),
                 onPressed: () {
-                  Navigator.of(context).pop(); // Dismiss the alert dialog
+                  Navigator.of(context).pop();
                 },
               ),
             ],

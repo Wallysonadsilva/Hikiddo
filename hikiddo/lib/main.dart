@@ -10,11 +10,13 @@ import 'firebase_options.dart';
 
 
 void main() async {
+  // Initialises the Firebase
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  // Lock screen orientation to portrait mode.
+
+  // Lock screen orientation to portrait mode
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
@@ -24,9 +26,9 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
+    // StreamProvider manages user authentication
     return StreamProvider<UserModel?>.value(
       value: AuthService().user,
       initialData: null,
@@ -41,4 +43,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-

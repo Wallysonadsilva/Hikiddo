@@ -21,7 +21,7 @@ class UserLocation {
     double latitude = data['lat']?.toDouble() ?? 0.0;
     double longitude = data['lng']?.toDouble() ?? 0.0;
     String name = data['name'] ?? 'No Name';
-    // Use a default URL if no URL is found
+    // Default URL is used if no URL is found
     String profileImageUrl = data['imageLink'] as String? ?? 'https://t3.ftcdn.net/jpg/02/09/37/00/360_F_209370065_JLXhrc5inEmGl52SyvSPeVB23hB6IjrR.jpg';
 
     return UserLocation(

@@ -278,7 +278,7 @@ class BodyState extends State<Body> {
             ),
         ],
       );
-    },) ?? false; // Handle the case where showDialog returns null (dialog dismissed)
+    },) ?? false;
 
     // Proceed with removal if confirmed
     if (confirmed && familyGroupId != null) {
@@ -405,7 +405,7 @@ class BodyState extends State<Body> {
         batch.delete(task.reference);
       }
 
-      // Update or delete familyGroupId in users' documents
+      // Delete familyGroupId in users documents
       var usersSnapshot = await firestore
           .collection('users')
           .where('familyGroupId', isEqualTo: familyGroupId)

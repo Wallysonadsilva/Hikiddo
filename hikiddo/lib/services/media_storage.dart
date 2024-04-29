@@ -30,12 +30,12 @@ class MediaDataServices {
             .update({
           'imageLink': imageUrl,
         });
-        return "success"; // Ensure this line is reached after successful upload and update
+        return "success";
       } else {
-        return "User ID is null"; // More specific error message
+        return "User ID is null";
       }
     } catch (err) {
-      return err.toString(); // Consider logging this error as well
+      return err.toString();
     }
   }
 
@@ -54,40 +54,41 @@ class MediaDataServices {
     return null;
   }
 
-Future<String> uploadMemoryBoardMedia(Uint8List fileBytes, String fileName, String groupId, bool isVideo) async {
-  String filePath = 'memoryBoard/${isVideo ? 'Videos' : 'Images'}/$groupId/$fileName';
-  Reference ref = _storage.ref().child(filePath);
-  UploadTask uploadTask = ref.putData(fileBytes);
-  TaskSnapshot snapshot = await uploadTask.whenComplete(() {});
-  String downloadUrl = await snapshot.ref.getDownloadURL();
+  Future<String> uploadMemoryBoardMedia(Uint8List fileBytes, String fileName,
+      String groupId, bool isVideo) async {
+    String filePath =
+        'memoryBoard/${isVideo ? 'Videos' : 'Images'}/$groupId/$fileName';
+    Reference ref = _storage.ref().child(filePath);
+    UploadTask uploadTask = ref.putData(fileBytes);
+    TaskSnapshot snapshot = await uploadTask.whenComplete(() {});
+    String downloadUrl = await snapshot.ref.getDownloadURL();
 
-  await FirebaseFirestore.instance.collection('memoryBoardMedia').add({
-    'mediaUrl': downloadUrl,
-    'familyGroupId': groupId,
-    'isVideo': isVideo,
-    'timestamp': FieldValue.serverTimestamp(),
-  });
+    await FirebaseFirestore.instance.collection('memoryBoardMedia').add({
+      'mediaUrl': downloadUrl,
+      'familyGroupId': groupId,
+      'isVideo': isVideo,
+      'timestamp': FieldValue.serverTimestamp(),
+    });
 
-  return downloadUrl;
-}
-
-
-
- Future<List<MediaItem>> fetchMemoryBoardMedia(String groupId) async {
-  List<MediaItem> mediaItems = [];
-
-  final QuerySnapshot snapshot = await FirebaseFirestore.instance
-      .collection('memoryBoardMedia')
-      .where('familyGroupId', isEqualTo: groupId)
-      .get();
-
-  for (var doc in snapshot.docs) {
-    var data = doc.data() as Map<String, dynamic>;
-    mediaItems.add(MediaItem(url: data['mediaUrl'], isVideo: data['isVideo']));
+    return downloadUrl;
   }
 
-  return mediaItems;
-}
+  Future<List<MediaItem>> fetchMemoryBoardMedia(String groupId) async {
+    List<MediaItem> mediaItems = [];
+
+    final QuerySnapshot snapshot = await FirebaseFirestore.instance
+        .collection('memoryBoardMedia')
+        .where('familyGroupId', isEqualTo: groupId)
+        .get();
+
+    for (var doc in snapshot.docs) {
+      var data = doc.data() as Map<String, dynamic>;
+      mediaItems
+          .add(MediaItem(url: data['mediaUrl'], isVideo: data['isVideo']));
+    }
+
+    return mediaItems;
+  }
 
 //record
   Future<List<VoiceRecording>> fetchRecordings(String groupId) async {
@@ -98,7 +99,8 @@ Future<String> uploadMemoryBoardMedia(Uint8List fileBytes, String fileName, Stri
 
     return querySnapshot.docs
         // ignore: unnecessary_cast
-        .map((doc) => VoiceRecording.fromFirestore(doc.data() as Map<String, dynamic>, doc.id))
+        .map((doc) => VoiceRecording.fromFirestore(
+            doc.data() as Map<String, dynamic>, doc.id))
         .toList();
   }
 
@@ -109,35 +111,34 @@ Future<String> uploadMemoryBoardMedia(Uint8List fileBytes, String fileName, Stri
     await _firestore.collection('recordings').doc(recordingId).delete();
   }
 
-Future<String> saveRecording(Uint8List recordingData, String title, String groupId) async {
-  // Assuming recordingData is the binary data of your recording
-  // Save the recording to Firebase Storage first
-  String filePath = 'recordings/$groupId/${DateTime.now().millisecondsSinceEpoch}.mp3';
-  Reference storageRef = FirebaseStorage.instance.ref().child(filePath);
-  UploadTask uploadTask = storageRef.putData(recordingData);
-  await uploadTask.whenComplete(() => null);
-  String fileUrl = await storageRef.getDownloadURL();
+  Future<String> saveRecording(Uint8List recordingData, String title, String groupId) async {
+    // Save the recording to Firebase Storage
+    String filePath ='recordings/$groupId/${DateTime.now().millisecondsSinceEpoch}.mp3';
+    Reference storageRef = FirebaseStorage.instance.ref().child(filePath);
+    UploadTask uploadTask = storageRef.putData(recordingData);
+    await uploadTask.whenComplete(() => null);
+    String fileUrl = await storageRef.getDownloadURL();
 
-  // Get current user's ID
-  String? userId = FirebaseAuth.instance.currentUser?.uid;
-  if (userId == null) throw Exception("User not logged in");
+    // Get current user's ID
+    String? userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) throw Exception("User not logged in");
 
-  // Save recording metadata to Firestore, including the user ID
-  DocumentReference docRef = await _firestore.collection('recordings').add({
-    'title': title,
-    'date': Timestamp.now(),
-    'fileUrl': fileUrl,
-    'familyGroupId': groupId,
-    'userId': userId, // Add the user ID here
-  });
+    // Save recording metadata to Firestore, including the user ID
+    DocumentReference docRef = await _firestore.collection('recordings').add({
+      'title': title,
+      'date': Timestamp.now(),
+      'fileUrl': fileUrl,
+      'familyGroupId': groupId,
+      'userId': userId,
+    });
 
-  return docRef.id; // Optionally return document ID
-}
-
+    return docRef.id;
+  }
 
   Future<void> updateRecordingTitle(String recordingId, String newTitle) async {
-  await _firestore.collection('recordings').doc(recordingId).update({'title': newTitle});
-}
-
-
+    await _firestore
+        .collection('recordings')
+        .doc(recordingId)
+        .update({'title': newTitle});
+  }
 }

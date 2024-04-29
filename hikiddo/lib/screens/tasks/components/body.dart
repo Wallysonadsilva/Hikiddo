@@ -166,11 +166,10 @@ class BodyState extends State<Body> {
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        height: 350, // Fixed height for the container
+                        height: 350,
                         width: double
-                            .infinity, // Container takes the full width of its parent
+                            .infinity,
                         child: SingleChildScrollView(
-                          // Allows scrolling within the fixed height container
                           physics: const AlwaysScrollableScrollPhysics(),
                           child: StreamBuilder<List<Task>>(
                             stream: _databaseService.getFamilyGroupTasks(
@@ -183,9 +182,8 @@ class BodyState extends State<Body> {
                               List<Task> tasks = snapshot.data!;
                               return ListView.builder(
                                 shrinkWrap:
-                                    true, // Important to ensure the ListView occupies minimum space
-                                physics:
-                                    const NeverScrollableScrollPhysics(), // Disables scrolling within the ListView
+                                    true,
+                                physics: const NeverScrollableScrollPhysics(),
                                 itemCount: tasks.length,
                                 itemBuilder: (context, index) {
                                   return CheckboxListTile(
@@ -257,11 +255,10 @@ class BodyState extends State<Body> {
     final TextEditingController titleController = TextEditingController();
     final TextEditingController pointsController = TextEditingController();
 
-    // Function to show a SnackBar with an error message
     void showErrorSnackBar(String message) {
       final snackBar = SnackBar(
         content: Text(message),
-        backgroundColor: Colors.red, // Optional: customize your SnackBar color
+        backgroundColor: Colors.red,
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
@@ -307,14 +304,14 @@ class BodyState extends State<Body> {
 
                 if (points == null) {
                   showErrorSnackBar("Please enter a valid number for points.");
-                  return; // Keep the dialog open
+                  return;
                 }
 
                 // If input is valid, proceed to add the task
                 _databaseService
                     .addTask(widget.familyGroupId, title, points)
                     .then((_) {
-                  Navigator.of(context).pop(); // Close the dialog upon success
+                  Navigator.of(context).pop();
                 }).catchError((error) {
                   showErrorSnackBar("Failed to add task: $error");
                   // Optionally, keep the dialog open if the task fails to add
@@ -471,14 +468,10 @@ class BodyState extends State<Body> {
       });
     }
 
-    // Optional: Show a confirmation message
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Points updated and completed tasks deleted.')));
     }
-
-    // Optional: Refresh the list of tasks to reflect the changes
-    setState(() {});
   }
 
   void showScoreboardDialog() {

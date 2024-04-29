@@ -77,7 +77,6 @@ class _BodyState extends State<Body> {
                         if (value == null || value.isEmpty) {
                           return "Please enter a name";
                         }
-                        // Notice the use of double quotes around the pattern and single quotes within it
                         if (!RegExp(r"^[a-zA-Z\s'-]+$").hasMatch(value)) {
                           return "Names can only contain letters";
                         }
@@ -98,7 +97,7 @@ class _BodyState extends State<Body> {
                           return 'Enter a valid email';
                         }
                         setState(() => error =
-                            ''); // Clear any error message if all validations pass
+                            '');
                         return null;
                       },
                       hintText: "Email",
@@ -147,9 +146,7 @@ class _BodyState extends State<Body> {
                                 Navigator.pushReplacement(
                                   // ignore: use_build_context_synchronously
                                   context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          const JoinFamilyScreen()),
+                                  MaterialPageRoute(builder: (context) => const JoinFamilyScreen()),
                                 );
                               }
                             });

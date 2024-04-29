@@ -22,14 +22,15 @@ class EmailVerifyPage extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 20.0,),
+            SizedBox(height: 20.0),
             Center(
               child: SpinKitFadingCircle(
                 color: greenColor,
                 size: 50.0,
               ),
             ),
-          ]),
+          ]
+      ),
     );
   }
 }

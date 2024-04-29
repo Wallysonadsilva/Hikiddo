@@ -33,7 +33,7 @@ class DatabaseService {
           snapshot.docs.map((doc) => Task.fromFirestore(doc.data() as Map<String, dynamic>, doc.id)).toList());
 }
 
-  Future<void> updateUserData(String name, String email, String phoneNumber, String password) async {
+  Future<void> updateUserData(String name, String email, String phoneNumber) async {
     await userCollection.doc(uid).set({
       'name': name,
       'email': email,
@@ -64,11 +64,11 @@ Future<List<String>> searchGroups(String query) async {
       .where('name', isLessThan: '${query}z')
       .get();
 
-  // Cast each document's data to Map<String, dynamic> before accessing it with []
+  // Cast each document data to Map<String, dynamic>
   return querySnapshot.docs
-      .map((doc) => (doc.data() as Map<String, dynamic>)['name'] as String?) // Safe cast to Map<String, dynamic>
-      .where((name) => name != null) // Filter out any nulls that might still be present
-      .map((name) => name!) // This cast is safe because we filtered out nulls
+      .map((doc) => (doc.data() as Map<String, dynamic>)['name'] as String?)
+      .where((name) => name != null)
+      .map((name) => name!)
       .toList();
 }
 

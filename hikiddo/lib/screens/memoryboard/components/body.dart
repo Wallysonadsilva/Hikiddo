@@ -37,7 +37,6 @@ class BodyState extends State<Body> {
 
   @override
   Widget build(BuildContext context) {
-    // Fetch and update images when the family group ID is availab
     return PopScope(
       canPop: false,
       child: Scaffold(
@@ -99,7 +98,6 @@ class BodyState extends State<Body> {
                                                             ConnectionState
                                                                 .done &&
                                                         snapshot.hasData) {
-                                                      // Wrap the snapshot.data in a container to ensure it fills the space
                                                       return Container(
                                                         decoration:
                                                             BoxDecoration(
@@ -107,18 +105,16 @@ class BodyState extends State<Body> {
                                                               BorderRadius
                                                                   .circular(10),
                                                         ),
-                                                        clipBehavior: Clip
-                                                            .antiAlias, // Ensures the content is clipped to the border radius
+                                                        clipBehavior:
+                                                            Clip.antiAlias,
                                                         child: Stack(
                                                           alignment:
                                                               Alignment.center,
                                                           children: [
                                                             Positioned.fill(
-                                                              // This will ensure the thumbnail image fills the container
                                                               child: snapshot
-                                                                  .data!, // Assuming this is an Image widget
+                                                                  .data!,
                                                             ),
-                                                            // Semi-transparent overlay to improve the visibility of the icon
                                                             Container(
                                                               decoration:
                                                                   const BoxDecoration(
@@ -165,43 +161,45 @@ class BodyState extends State<Body> {
                         ],
                       ),
               ),
-        floatingActionButton:  familyGroupId != null ? Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            FloatingActionButton(
-              backgroundColor: Colors.white,
-              onPressed: _pickMediaFromGallery,
-              heroTag: 'gallery',
-              tooltip: 'Add from Gallery',
-              child: const Icon(
-                Icons.photo_library,
-                color: Colors.blueGrey,
-              ),
-            ),
-            const SizedBox(width: 20),
-            FloatingActionButton(
-              backgroundColor: Colors.white,
-              onPressed: _capturePhoto,
-              heroTag: 'camera',
-              tooltip: 'Use Camera',
-              child: const Icon(
-                Icons.camera_alt,
-                color: Colors.blueGrey,
-              ),
-            ),
-            const SizedBox(width: 20),
-            FloatingActionButton(
-              backgroundColor: Colors.white,
-              onPressed: _captureVideo,
-              heroTag: 'video',
-              tooltip: 'Record Video',
-              child: const Icon(
-                Icons.videocam,
-                color: Colors.blueGrey,
-              ),
-            ),
-          ],
-        ) : null,
+        floatingActionButton: familyGroupId != null
+            ? Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  FloatingActionButton(
+                    backgroundColor: Colors.white,
+                    onPressed: _pickMediaFromGallery,
+                    heroTag: 'gallery',
+                    tooltip: 'Add from Gallery',
+                    child: const Icon(
+                      Icons.photo_library,
+                      color: Colors.blueGrey,
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  FloatingActionButton(
+                    backgroundColor: Colors.white,
+                    onPressed: _capturePhoto,
+                    heroTag: 'camera',
+                    tooltip: 'Use Camera',
+                    child: const Icon(
+                      Icons.camera_alt,
+                      color: Colors.blueGrey,
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  FloatingActionButton(
+                    backgroundColor: Colors.white,
+                    onPressed: _captureVideo,
+                    heroTag: 'video',
+                    tooltip: 'Record Video',
+                    child: const Icon(
+                      Icons.videocam,
+                      color: Colors.blueGrey,
+                    ),
+                  ),
+                ],
+              )
+            : null,
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       ),
     );
@@ -249,14 +247,12 @@ class BodyState extends State<Body> {
         try {
           await _mediaDataServices.uploadMemoryBoardMedia(
               fileBytes, fileName, familyGroupId!, isVideo);
-          _fetchAndUpdateMedia(); // Refresh the media displayed in the UI
+          _fetchAndUpdateMedia();
           if (!mounted) return;
-          // Inform the user of success
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('File uploaded successfully!')),
           );
         } catch (e) {
-          // Inform the user of failure
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Failed to upload file.')),
@@ -277,7 +273,7 @@ class BodyState extends State<Body> {
       String fileName = photo.name;
       await _mediaDataServices.uploadMemoryBoardMedia(fileBytes, fileName,
           familyGroupId!, false); // false indicating it's not a video
-      _fetchAndUpdateMedia(); // Refresh the media displayed in the UI
+      _fetchAndUpdateMedia();
     }
   }
 
@@ -288,7 +284,7 @@ class BodyState extends State<Body> {
       String fileName = video.name;
       await _mediaDataServices.uploadMemoryBoardMedia(fileBytes, fileName,
           familyGroupId!, true); // true indicating it's a video
-      _fetchAndUpdateMedia(); // Refresh the media displayed in the UI
+      _fetchAndUpdateMedia();
     }
   }
 
@@ -310,7 +306,7 @@ class BodyState extends State<Body> {
       final Uint8List? thumbnailData = await VideoThumbnail.thumbnailData(
         video: url,
         imageFormat: ImageFormat.JPEG,
-        maxWidth: 128, // You can adjust the size
+        maxWidth: 128,
         quality: 25,
       );
 
@@ -352,28 +348,23 @@ class BodyState extends State<Body> {
     if (!mounted) return;
     showDialog(
       context: context,
-      barrierDismissible:
-          false, // Prevent dismissing the dialog by tapping outside it
+      barrierDismissible: false,
       builder: (_) => AlertDialog(
         backgroundColor: Colors.transparent,
-        contentPadding:
-            EdgeInsets.zero, // Removes padding around the dialog content
+        contentPadding: EdgeInsets.zero,
         content: StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
             videoPlayerController.addListener(() {
               final bool isEnded = videoPlayerController.value.position >=
                   videoPlayerController.value.duration -
-                      const Duration(
-                          milliseconds:
-                              500); // Adding a small buffer to ensure the end of the video is detected accurately
+                      const Duration(milliseconds: 500);
               if (isEnded) {
                 setState(() {});
               }
             });
 
             return Stack(
-              alignment: Alignment
-                  .topRight, // Aligns the close button to the top right
+              alignment: Alignment.topRight,
               children: [
                 AspectRatio(
                   aspectRatio: videoPlayerController.value.aspectRatio,
@@ -386,10 +377,8 @@ class BodyState extends State<Body> {
                               const Duration(milliseconds: 500))
                         GestureDetector(
                           onTap: () {
-                            videoPlayerController.seekTo(Duration
-                                .zero); // Rewind the video to the beginning
-                            videoPlayerController
-                                .play(); // Play the video again
+                            videoPlayerController.seekTo(Duration.zero);
+                            videoPlayerController.play();
                             setState(() {});
                           },
                           child: Container(
@@ -401,14 +390,13 @@ class BodyState extends State<Body> {
                     ],
                   ),
                 ),
-                // Close button
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: IconButton(
                     icon: const Icon(Icons.close,
                         size: 30.0, color: Colors.white),
                     onPressed: () {
-                      Navigator.of(context).pop(); // Close the dialog
+                      Navigator.of(context).pop();
                     },
                   ),
                 ),
@@ -418,8 +406,7 @@ class BodyState extends State<Body> {
         ),
       ),
     ).then((_) {
-      videoPlayerController
-          .dispose(); // Dispose of the controller when the dialog is closed
+      videoPlayerController.dispose();
     });
   }
 
@@ -433,15 +420,13 @@ class BodyState extends State<Body> {
             width: double.infinity,
             height: double.infinity,
             child: GestureDetector(
-              onTap: () => Navigator.pop(context), // Close the dialog on tap
+              onTap: () => Navigator.pop(context),
               child: Image.network(
                 imageUrl,
                 fit: BoxFit.contain,
                 errorBuilder: (BuildContext context, Object exception,
                     StackTrace? stackTrace) {
-                  // Here you can return any placeholder widget
-                  return const Icon(
-                      Icons.broken_image); // Placeholder icon for errors
+                  return const Icon(Icons.broken_image);
                 },
               ),
             ),

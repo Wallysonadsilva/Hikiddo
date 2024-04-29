@@ -123,9 +123,9 @@ class BodyState extends State<Body> {
                                                     style: TextStyle(
                                                       fontSize: 16,
                                                       fontWeight: FontWeight
-                                                          .bold, // Make "Title:" bold
+                                                          .bold,
                                                       color: Colors
-                                                          .black, // Specify the color for the text
+                                                          .black,
                                                     ),
                                                   ),
                                                   TextSpan(
@@ -133,9 +133,9 @@ class BodyState extends State<Body> {
                                                     style: const TextStyle(
                                                       fontSize: 16,
                                                       fontWeight: FontWeight
-                                                          .normal, // Keep the recording title in normal weight
+                                                          .normal,
                                                       color:
-                                                          greenColor, // Specify the color for the text
+                                                          greenColor,
                                                     ),
                                                   ),
                                                 ],
@@ -199,7 +199,6 @@ class BodyState extends State<Body> {
     final permissionStatus = await Permission.microphone.request();
     if (permissionStatus != PermissionStatus.granted) {
       print('Microphone permission not granted');
-      // Consider showing a dialog or a snackbar to inform the user.
     }
     await _soundRecorder.openAudioSession();
   }
@@ -214,11 +213,9 @@ class BodyState extends State<Body> {
         // Read the file as a Uint8List
         final recordingData = await File(recordingPath).readAsBytes();
 
-        // Assuming you have a title for your recording and a group ID
         String title = "Add Title";
-        String? familyGroupId = await _databaseService
-            // ignore: use_build_context_synchronously
-            .getFamilyGroupId(context); // You need to define how to obtain this
+        // ignore: use_build_context_synchronously
+        String? familyGroupId = await _databaseService.getFamilyGroupId(context);
 
         // Save the recording to Firebase
         await _mediaDataServices.saveRecording(
@@ -253,31 +250,25 @@ class BodyState extends State<Body> {
       setState(() => _currentlyPlayingUrl = null);
     } else {
       await _audioPlayer.stop(); // Ensure any current playback is stopped
-      await _playRecording(url);
-      // The _currentlyPlayingUrl will be set within _playRecording
+      await _playRecording(url); // The _currentlyPlayingUrl will be set within _playRecording
     }
   }
 
   Future<void> _initLoadRecordings() async {
-    // Assuming you have a way to get the current user's family group ID
     familyGroupId = await _databaseService.getFamilyGroupId(context);
     if (familyGroupId != null) {
       try {
-        await _loadRecordings(
-            familyGroupId!); // Pass the group ID to the method
+        await _loadRecordings( familyGroupId!);
       } catch (e) {
         print("Failed to load recordings: $e");
-        // Consider showing an error message to the user
       }
     } else {
       print("Family group ID is null");
-      // Handle the case where there's no group ID
     }
   }
 
   Future<void> _loadRecordings(String groupId) async {
     recordings = await _mediaDataServices.fetchRecordings(groupId);
-    setState(() {});
   }
 
   Future<void> _editTitleDialog(VoiceRecording recording) async {
@@ -342,7 +333,6 @@ class BodyState extends State<Body> {
         recording.title = newTitle;
       });
     } catch (e) {
-      // Handle errors, possibly show a snackbar with the error message
       print("Error saving new title: $e");
     }
   }
@@ -376,8 +366,7 @@ class BodyState extends State<Body> {
   }
 
   Future<void> _fetchAndStoreHostId(String familyGroupId) async {
-    String? id =
-        await _databaseService.getFamilyGroupHostId(context, familyGroupId);
+    String? id = await _databaseService.getFamilyGroupHostId(context, familyGroupId);
     if (mounted) {
       setState(() {
         hostId = id;
@@ -387,7 +376,6 @@ class BodyState extends State<Body> {
 
   Future<void> _deleteRecording(String recordingId) async {
     try {
-      // Assuming recordings have an associated fileUrl you need to delete from Firebase Storage
       final String fileUrl = recordings
           .firstWhere((recording) => recording.id == recordingId)
           .fileUrl;

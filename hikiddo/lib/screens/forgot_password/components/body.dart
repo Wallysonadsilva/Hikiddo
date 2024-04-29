@@ -37,10 +37,9 @@ class BodyState extends State<Body> {
           child: ConstrainedBox(
             constraints: BoxConstraints(
               minHeight: size
-                  .height, // Ensures the column expands to at least the height of the screen
+                  .height,
             ),
             child: IntrinsicHeight(
-              // This ensures the column doesn't stretch beyond its intrinsic height
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
@@ -96,7 +95,6 @@ class BodyState extends State<Body> {
               ],
             ),
           );
-          // Perform navigation after the dialog is dismissed
           // ignore: use_build_context_synchronously
           Navigator.pushReplacement(context,
               MaterialPageRoute(builder: (context) => const LoginScreen()));
@@ -116,7 +114,7 @@ class BodyState extends State<Body> {
             TextButton(
               child: const Text("OK"),
               onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
+                Navigator.of(context).pop();
               },
             ),
           ],
