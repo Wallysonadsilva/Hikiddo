@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:hikiddo/models/location.dart'; // Ensure this file reflects the updated UserLocation class
+import 'package:hikiddo/models/location.dart';
 import 'package:hikiddo/screens/location/components/custom_marker.dart';
 import 'package:hikiddo/services/database.dart';
 import 'package:location/location.dart';
@@ -19,8 +19,7 @@ class _BodyState extends State<Body> {
   final Location location = Location();
   Set<Marker> _markers = {};
   final Completer<GoogleMapController> _controller = Completer();
-  StreamSubscription<List<UserLocation>>? _locationUpdatesSubscription;
-  final bool _initialFitDone = false;
+  StreamSubscription<List<UserLocation>>? _locationUpdates;
   late BitmapDescriptor customIcon;
 
   @override
@@ -33,7 +32,7 @@ class _BodyState extends State<Body> {
 
   @override
   void dispose() {
-    _locationUpdatesSubscription?.cancel();
+    _locationUpdates?.cancel();
     super.dispose();
   }
 
@@ -42,8 +41,7 @@ class _BodyState extends State<Body> {
     LatLng initialPosition = _markers.isNotEmpty
         ? _markers.first.position
         : const LatLng(51.509865, -0.118092); // Default position
-    double initialZoom =
-        _markers.isNotEmpty ? 12.0 : 10.0; // Adjust zoom level as needed
+    double initialZoom = _markers.isNotEmpty ? 12.0 : 10.0;
 
     return PopScope(
       canPop: false,
@@ -76,9 +74,9 @@ class _BodyState extends State<Body> {
   }
 
   void _listenForLocationUpdates(String familyGroupId) {
-    _locationUpdatesSubscription
-        ?.cancel(); // Cancel any existing subscription first
-    _locationUpdatesSubscription = _databaseService
+    _locationUpdates
+        ?.cancel();
+    _locationUpdates = _databaseService
         .getFamilyGroupUserLocationsStream(familyGroupId)
         .listen(
       (locations) async {
@@ -106,7 +104,6 @@ class _BodyState extends State<Body> {
         position: userLocation.latLng,
         icon: icon,
         infoWindow: InfoWindow(title: userLocation.name),
-        onTap: _fitMarkers,
       );
 
       newMarkers.add(marker);
@@ -117,25 +114,6 @@ class _BodyState extends State<Body> {
         _markers = newMarkers;
       });
     }
-  }
-
-  Future<void> _fitMarkers() async {
-    if (_markers.isNotEmpty && _controller.isCompleted && !_initialFitDone) {
-      var controller = await _controller.future;
-      var bounds = _getLatLngBounds(_markers);
-      var cameraUpdate = CameraUpdate.newLatLngBounds(bounds, 100);
-      controller.animateCamera(cameraUpdate);
-      //_initialFitDone = true; // Enable this to prevent future auto-zooming
-    }
-  }
-
-  LatLngBounds _getLatLngBounds(Set<Marker> markers) {
-    var latitudes = markers.map((m) => m.position.latitude);
-    var longitudes = markers.map((m) => m.position.longitude);
-    return LatLngBounds(
-      southwest: LatLng(latitudes.reduce(min), longitudes.reduce(min)),
-      northeast: LatLng(latitudes.reduce(max), longitudes.reduce(max)),
-    );
   }
 
   void _requestPermission() async {

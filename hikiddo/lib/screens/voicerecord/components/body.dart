@@ -269,6 +269,7 @@ class BodyState extends State<Body> {
 
   Future<void> _loadRecordings(String groupId) async {
     recordings = await _mediaDataServices.fetchRecordings(groupId);
+    setState(() {});
   }
 
   Future<void> _editTitleDialog(VoiceRecording recording) async {

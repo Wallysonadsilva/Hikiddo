@@ -82,7 +82,7 @@ class BodyState extends State<Body> {
                       if (_currentUserIsHost)
                         Row(
                           mainAxisAlignment: MainAxisAlignment
-                              .center, // Adjust spacing as needed
+                              .center, 
                           children: [
                             FloatingActionButton(
                               onPressed: showAddTaskDialog,
@@ -414,7 +414,7 @@ class BodyState extends State<Body> {
                         await _databaseService
                             .resetFamilyGroupPoints(widget.familyGroupId);
                       }
-                      Navigator.of(context).pop(); // Close the dialog
+                      Navigator.of(context).pop();
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text(" Rewards Updated")),
                       );

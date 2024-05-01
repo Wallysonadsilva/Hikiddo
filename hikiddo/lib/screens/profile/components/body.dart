@@ -137,13 +137,12 @@ class BodyState extends State<Body> {
 
   void selectImage() async {
     Uint8List img = await pickUpImage(ImageSource.gallery, context);
-    // After the async gap, check if the widget is still mounted
     if (!mounted) return;
-
     if (img.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text("No image selected or failed to pick an image.")),
+            content: Text("No image selected or failed to pick an image.")
+        ),
       );
       return;
     }
