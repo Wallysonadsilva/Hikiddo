@@ -4,7 +4,7 @@ HiKiddo is a full-stack mobile application developed using Flutter and Dart. It 
 
 ## Features:
 - **Authentication:** Secure login and signup using Firebase Authentication.
-- **Family Group Management:** Users can join or create family groups, manage membership, and track group activities.
+- **Family Group Management:** Users can join or create family groups and track group activities.
 - **Location Tracking:** Real-time location updates for family members using Google Maps API.
 - **Memory Board:** Share and preserve family memories with photo and video uploads.
 - **Voice Recording:** Record and share meaningful messages or stories within the family group.
