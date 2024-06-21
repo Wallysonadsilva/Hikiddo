@@ -12,7 +12,7 @@ HiKiddo is a full-stack mobile application developed using Flutter and Dart. It 
 
 ## Technologies Used:
 - **Flutter & Dart:** For building the app's front end with a responsive and visually appealing user interface.
-- **Firebase:** Utilized for authentication, database, and cloud storage.
+- **Firebase:** Utilised for authentication, database, and cloud storage.
 - **Google Maps API:** Integrated for location-based features.
 
 
