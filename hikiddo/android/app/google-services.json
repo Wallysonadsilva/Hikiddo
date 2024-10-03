@@ -7,7 +7,7 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1056513329438:android:03c6d83db7411b481ce10f",
+        "mobilesdk_app_id": "",
         "android_client_info": {
           "package_name": "com.example.hikiddo"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBaUKbdxGQhm2Df3YQ8Pc2zCPHp9etSsMA"
+          "current_key": ""
         }
       ],
       "services": {
