@@ -1,18 +1,22 @@
-# HiKiddo
+# 📱 HiKiddo! - Family Bonding App
 
-HiKiddo is a full-stack mobile application developed using Flutter and Dart. It is my first Flutter project. Below are the key features and technologies embedded in the project:
+## 📝 Project Overview
+HiKiddo! is a mobile app developed as a final year project for a Computer Science degree, designed to strengthen family bonds and address issues arising from physical disconnection between parents and children. Inspired by the Japanese martial art Aikido, the app aims to empower families through modern technology innovations.
 
-## Features:
-- **Authentication:** Secure login and signup using Firebase Authentication.
-- **Family Group Management:** Users can join or create family groups and track group activities.
-- **Location Tracking:** Real-time location updates for family members using Google Maps API.
-- **Memory Board:** Share and preserve family memories with photo and video uploads.
-- **Voice Recording:** Record and share meaningful messages or stories within the family group.
-- **Challenges and Rewards:** Set tasks and track family achievements with a points system and rewards.
+## 🛠 Key Features
+- 🔍 **Location Tracking**: Ensure the security of children by monitoring their location.
+- 🖼️ **Shared Memory Board**: Add and share photos, videos, and meaningful voice recordings.
+- 🎮 **Weekly Challenges**: Complete engaging tasks to earn rewards and points.
+- 💗 **Emotional Support**: Enhance emotional connections and meet the developmental needs of children.
 
-## Technologies Used:
-- **Flutter & Dart:** For building the app's front end with a responsive and visually appealing user interface.
-- **Firebase:** Utilised for authentication, database, and cloud storage.
-- **Google Maps API:** Integrated for location-based features.
+## 🎯 Project Goals
+- Assist parents in being more attentive and responsive to their children's needs.
+- Strengthen familial ties through the use of modern technology.
+- Provide a secure and engaging platform for families to stay connected.
+- Encourage meaningful interactions and create shared experiences.
 
-
+## 📦 Repository Contents
+- Source code
+- Project documentation
+- UI/UX designs
+- Implementation details
