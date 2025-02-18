@@ -92,6 +92,14 @@ flutter run
 ```
 
 ## Preview
+<div>
+    <img src="Preview%20Imgs/IMG_0894.PNG" width="20%" style="display: inline-block;">
+    <img src="Preview%20Imgs/IMG_0895.PNG" width="20%" style="display: inline-block;">
+    <img src="Preview%20Imgs/IMG_0896.PNG" width="20%" style="display: inline-block;">
+    <img src="Preview%20Imgs/IMG_0897.PNG" width="20%" style="display: inline-block;">
+</div>
+
+More screenshots under the [Preview Imgs](https://github.com/Wallysonadsilva/Hikiddo/tree/main/Preview%20Imgs) folder
 
 #### Quick Demo video [Link](https://www.canva.com/design/DAGfaPKbtuQ/sqIT7QeGrAkXJBKMDpuGLg/edit?utm_content=DAGfaPKbtuQ&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton) 🔗
 
