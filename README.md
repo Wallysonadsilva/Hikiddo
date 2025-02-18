@@ -42,6 +42,9 @@ lib/
 ├── verification_email.dart # UI for email verification
 ```
 
+## Data Flow diagram
+<img src="Preview%20Imgs/data_flow.drawio.png">
+
 ## **📦 Dependencies**
 ### You can find the dependencies list in [pubspec.yaml](https://github.com/Wallysonadsilva/Hikiddo/blob/main/hikiddo/pubspec.yaml)
 
